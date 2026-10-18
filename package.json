@@ -2,11 +2,8 @@
   "name": "sistem-verifikasi-sertifikat-yayasan",
   "version": "1.0.0",
   "description": "Sistem Penerbitan dan Verifikasi Sertifikat Lomba Yayasan Berbasis Vercel dan Google Sheets",
-  "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node server.js",
-    "build": "echo 'Build ready'"
+    "dev": "node local-server.js"
   },
   "keywords": [
     "sertifikat",
