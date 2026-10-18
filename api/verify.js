@@ -15,17 +15,23 @@ const PROFIL_YAYASAN = {
 /**
  * Helper HTTP GET untuk Vercel Serverless Function (zero-dependency)
  */
-function fetchHttps(url) {
+function fetchHttps(url, timeoutMs = 4000) {
   return new Promise((resolve, reject) => {
-    https.get(url, (res) => {
+    const request = https.get(url, (res) => {
       // Tangani redirect (HTTP 301, 302, 307)
       if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
-        return fetchHttps(res.headers.location).then(resolve).catch(reject);
+        return fetchHttps(res.headers.location, timeoutMs).then(resolve).catch(reject);
       }
       let data = '';
       res.on('data', chunk => data += chunk);
       res.on('end', () => resolve({ status: res.statusCode, data }));
-    }).on('error', reject);
+    });
+    
+    request.on('error', reject);
+    request.setTimeout(timeoutMs, () => {
+      request.destroy();
+      reject(new Error('Koneksi timeout setelah 4 detik'));
+    });
   });
 }
 
