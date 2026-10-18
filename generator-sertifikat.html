@@ -11,15 +11,16 @@
   
   <!-- QRCode.js Library -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <!-- html2canvas untuk export gambar stiker -->
+  <!-- html2canvas untuk export gambar stiker label -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
   <style>
     :root {
-      --primary: #123d2f; /* Dark Emerald SIBS Logo */
+      --primary: #123d2f; /* Dark Emerald khas Logo SIBS */
       --primary-hover: #0a251c;
       --primary-light: #ecfdf5;
-      --accent: #d97706;
+      --accent: #d97706; /* Emas */
+      --accent-light: #fef3c7;
       --slate-900: #0f172a;
       --slate-800: #1e293b;
       --slate-700: #334155;
@@ -60,14 +61,14 @@
       box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
     }
     .auth-logo {
-      width: 72px;
-      height: 72px;
+      width: 76px;
+      height: 76px;
       object-fit: contain;
       margin: 0 auto 16px auto;
       display: block;
     }
     .auth-card h2 {
-      font-size: 18px;
+      font-size: 19px;
       font-weight: 800;
       color: var(--primary);
       margin-bottom: 4px;
@@ -117,13 +118,13 @@
     .admin-header {
       background: #ffffff;
       border-radius: var(--radius);
-      padding: 16px 24px;
+      padding: 18px 24px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
       gap: 14px;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.04);
       border: 1px solid var(--slate-200);
     }
@@ -133,12 +134,12 @@
       gap: 14px;
     }
     .brand-logo-img {
-      width: 48px;
-      height: 48px;
+      width: 50px;
+      height: 50px;
       object-fit: contain;
     }
     .admin-header-title h1 {
-      font-size: 17px;
+      font-size: 18px;
       font-weight: 800;
       color: var(--primary);
       line-height: 1.2;
@@ -146,6 +147,7 @@
     .admin-header-title p {
       font-size: 12px;
       color: var(--slate-600);
+      margin-top: 2px;
     }
     .admin-actions {
       display: flex;
@@ -167,14 +169,64 @@
     }
     .btn-nav:hover { background: #e2e8f0; }
 
+    /* Workflow Banner (Panduan Jelas) */
+    .workflow-banner {
+      background: linear-gradient(135deg, #123d2f 0%, #1e4d3d 100%);
+      color: white;
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 8px 20px -4px rgba(18, 61, 47, 0.25);
+    }
+    .workflow-banner h3 {
+      font-size: 15px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      color: #fde68a;
+    }
+    .workflow-steps {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-top: 14px;
+    }
+    @media (max-width: 860px) {
+      .workflow-steps { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 480px) {
+      .workflow-steps { grid-template-columns: 1fr; }
+    }
+    .step-box {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      padding: 12px 14px;
+    }
+    .step-num {
+      font-size: 11px;
+      font-weight: 800;
+      color: #fde68a;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+    .step-desc {
+      font-size: 12px;
+      line-height: 1.4;
+      color: #e2e8f0;
+    }
+
     /* Main Grid */
     .main-grid {
       display: grid;
-      grid-template-columns: 440px 1fr;
+      grid-template-columns: 460px 1fr;
       gap: 24px;
       align-items: start;
     }
-    @media (max-width: 960px) {
+    @media (max-width: 980px) {
       .main-grid { grid-template-columns: 1fr; }
     }
 
@@ -193,22 +245,38 @@
       margin-bottom: 18px;
       display: flex;
       align-items: center;
+      justify-content: space-between;
       gap: 8px;
       padding-bottom: 12px;
       border-bottom: 1px solid var(--slate-200);
     }
     .form-group {
-      margin-bottom: 15px;
+      margin-bottom: 16px;
+    }
+    .label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
     }
     .form-group label {
       display: block;
       font-size: 11.5px;
       font-weight: 700;
       color: var(--slate-600);
-      margin-bottom: 5px;
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
+    .btn-quick {
+      background: none;
+      border: none;
+      color: var(--primary);
+      font-size: 11.5px;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+    .btn-quick:hover { color: var(--accent); }
     .form-group input, .form-group select {
       width: 100%;
       padding: 11px 13px;
@@ -244,7 +312,6 @@
       justify-content: center;
       gap: 8px;
       transition: all 0.2s;
-      margin-top: 6px;
     }
     .btn-green { background: var(--primary); color: white; }
     .btn-green:hover { background: var(--primary-hover); }
@@ -255,7 +322,7 @@
     .preview-column {
       display: flex;
       flex-direction: column;
-      gap: 24px;
+      gap: 20px;
     }
 
     /* Sticker Label Container */
@@ -263,14 +330,14 @@
       background: #ffffff;
       border: 2px dashed #cbd5e1;
       border-radius: 16px;
-      padding: 30px 20px;
+      padding: 26px 20px;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
     }
 
-    /* THE STICKER BADGE (Desain yang akan dicetak / ditempel di sertifikat manual) */
+    /* THE STICKER BADGE (Untuk ditempel fisik ke sertifikat manual) */
     #qr-sticker-badge {
       width: 240px;
       background: #ffffff;
@@ -285,8 +352,8 @@
       position: relative;
     }
     .sticker-logo-top {
-      width: 38px;
-      height: 38px;
+      width: 44px;
+      height: 44px;
       object-fit: contain;
       margin-bottom: 4px;
     }
@@ -358,9 +425,28 @@
       .download-grid { grid-template-columns: 1fr; }
     }
 
+    .qr-options-box {
+      background: #f8fafc;
+      border: 1px solid var(--slate-200);
+      border-radius: 12px;
+      padding: 14px;
+      margin-top: 14px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+    }
+    .qr-option-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
     .test-scan-box {
       background: #ecfdf5;
-      border: 1px solid #a7f3d0;
+      border: 1.5px solid #a7f3d0;
       border-radius: 12px;
       padding: 16px;
       display: flex;
@@ -385,7 +471,7 @@
       text-decoration: none;
       font-size: 12px;
       font-weight: 700;
-      padding: 8px 16px;
+      padding: 9px 16px;
       border-radius: 8px;
       display: inline-flex;
       align-items: center;
@@ -393,6 +479,19 @@
       transition: all 0.2s;
     }
     .btn-test-link:hover { background: #0a251c; }
+
+    /* Print only sticker */
+    @media print {
+      body * { visibility: hidden; }
+      #qr-sticker-badge, #qr-sticker-badge * { visibility: visible; }
+      #qr-sticker-badge {
+        position: absolute;
+        left: 20px;
+        top: 20px;
+        box-shadow: none;
+        border: 2px solid #000;
+      }
+    }
   </style>
 </head>
 <body>
@@ -403,7 +502,7 @@
     <img src="/logo-sibs.png" alt="Logo SIBS" class="auth-logo" />
     <h2>Generator QR Code Sertifikat</h2>
     <p>
-      Khusus Pengurus / Admin<br>
+      Khusus Pengurus & Admin<br>
       <b>Syarif Internasional Boarding School</b>
     </p>
 
@@ -415,7 +514,7 @@
       maxlength="20"
       autocomplete="off"
     />
-    <button type="button" class="btn-login" onclick="checkAuth()">Buka Akses</button>
+    <button type="button" class="btn-login" onclick="checkAuth()">Buka Akses Admin</button>
   </div>
 </div>
 
@@ -427,7 +526,7 @@
     <div class="brand-wrap">
       <img src="/logo-sibs.png" alt="Logo SIBS" class="brand-logo-img" />
       <div class="admin-header-title">
-        <h1>Generator QR Code Tempel Sertifikat</h1>
+        <h1>Pembuat QR Code Tempel Sertifikat (Admin)</h1>
         <p>Syarif Internasional Boarding School • Syarief Institute Bondowoso</p>
       </div>
     </div>
@@ -437,16 +536,48 @@
     </div>
   </div>
 
+  <!-- Workflow Banner: Penjelasan Konsep Kerja Yayasan -->
+  <div class="workflow-banner">
+    <h3>📌 Alur Kerja Pembuatan Sertifikat Yayasan</h3>
+    <p style="font-size: 12.5px; opacity: 0.95; line-height: 1.5;">
+      Sistem ini <b>hanya menghasilkan QR Code</b>. Sertifikat fisik dibuat/didesain manual oleh pengurus. QR Code yang diunduh dari sini tinggal ditempelkan ke sertifikat manual tersebut. Ketika QR Code di-scan, sistem otomatis menampilkan data santri untuk memverifikasi keasliannya.
+    </p>
+    <div class="workflow-steps">
+      <div class="step-box">
+        <div class="step-num">Langkah 1</div>
+        <div class="step-desc">Isi nomor sertifikat dan nama santri di form bawah ini.</div>
+      </div>
+      <div class="step-box">
+        <div class="step-num">Langkah 2</div>
+        <div class="step-desc">Unduh QR Code murni (atau unduh format stiker siap cetak).</div>
+      </div>
+      <div class="step-box">
+        <div class="step-num">Langkah 3</div>
+        <div class="step-desc">Tempelkan QR Code pada sertifikat manual (Canva / Corel / kertas blangko).</div>
+      </div>
+      <div class="step-box">
+        <div class="step-num">Langkah 4</div>
+        <div class="step-desc">Saat di-scan pakai HP santri, web memverifikasi keasliannya secara resmi.</div>
+      </div>
+    </div>
+  </div>
+
   <div class="main-grid">
     
     <!-- Form Input Data -->
     <div class="card">
-      <h2 class="card-title">📝 Data Keterangan Sertifikat</h2>
+      <div class="card-title">
+        <span>📝 Registrasi Data Santri</span>
+        <button type="button" class="btn-quick" onclick="resetForm()">🔄 Bersihkan / Baru</button>
+      </div>
 
       <div class="form-group">
-        <label>Nomor Sertifikat (ID Unik)</label>
+        <div class="label-row">
+          <label>Nomor Sertifikat (ID Unik)</label>
+          <button type="button" class="btn-quick" onclick="incrementId()">+ Nomor Selanjutnya</button>
+        </div>
         <input type="text" id="inp-id" value="SIBS-2026-0001" placeholder="cth: SIBS-2026-0001" />
-        <div class="helper-text">Format yang rapi, contoh: <code>SIBS-2026-0001</code></div>
+        <div class="helper-text">Format baku yayasan: <code>SIBS-2026-0001</code></div>
       </div>
 
       <div class="form-group">
@@ -461,7 +592,7 @@
 
       <div class="form-group">
         <label>Predikat / Prestasi</label>
-        <input type="text" id="inp-predikat" value="Juara 1" placeholder="cth: Juara 1 / Peserta / Mutqin" />
+        <input type="text" id="inp-predikat" value="Juara 1" placeholder="cth: Juara 1 / Mutqin / Peserta" />
       </div>
 
       <div class="form-group">
@@ -469,12 +600,12 @@
         <input type="text" id="inp-tanggal" value="23 Oktober 2026" placeholder="cth: 23 Oktober 2026" />
       </div>
 
-      <div style="margin-top: 24px; padding-top: 18px; border-top: 1px dashed var(--slate-200);">
+      <div style="margin-top: 24px; padding-top: 18px; border-top: 1px dashed var(--slate-200); display: flex; flex-direction: column; gap: 10px;">
         <button type="button" class="btn-action-main btn-secondary" onclick="copySheetsRow()">
-          📋 Salin Baris untuk Google Sheets
+          📋 Salin 1 Baris untuk Google Sheets
         </button>
-        <div class="helper-text" style="text-align: center; margin-top: 6px;">
-          Klik tombol di atas lalu langsung tekan <code>Ctrl + V</code> di Google Sheets Anda.
+        <div class="helper-text" style="text-align: center;">
+          Klik tombol di atas lalu tekan <code>Ctrl + V</code> di baris baru Google Sheets yayasan.
         </div>
       </div>
     </div>
@@ -484,9 +615,12 @@
       
       <!-- Box Stiker QR -->
       <div class="card">
-        <h2 class="card-title">🏷️ Pratinjau QR Code Siap Tempel</h2>
-        <p style="font-size: 12.5px; color: var(--slate-600); margin-bottom: 20px;">
-          QR Code ini siap diunduh dan ditempelkan pada lembar sertifikat fisik manual Anda.
+        <div class="card-title">
+          <span>🏷️ Pratinjau QR Code Siap Tempel</span>
+          <span style="font-size: 11px; font-weight: 700; color: #123d2f; background: #ecfdf5; padding: 3px 8px; border-radius: 6px;">Status: Valid</span>
+        </div>
+        <p style="font-size: 12.5px; color: var(--slate-600); margin-bottom: 18px;">
+          QR Code ini akan langsung mengarahkan ke halaman verifikasi resmi saat dipindai kamera HP.
         </p>
 
         <div class="sticker-container">
@@ -501,25 +635,48 @@
           </div>
         </div>
 
+        <!-- Opsi Tambahan untuk QR -->
+        <div class="qr-options-box">
+          <div class="qr-option-item">
+            <label for="qr-color-select" style="font-weight: 700;">Warna QR:</label>
+            <select id="qr-color-select" style="padding: 4px 8px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 12px;" onchange="updateQr()">
+              <option value="#123d2f" selected>Hijau Emerald SIBS</option>
+              <option value="#000000">Hitam Pekat Standar</option>
+            </select>
+          </div>
+          <div class="qr-option-item">
+            <label for="qr-bg-select" style="font-weight: 700;">Latar QR Saja:</label>
+            <select id="qr-bg-select" style="padding: 4px 8px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 12px;">
+              <option value="white" selected>Putih Bersih</option>
+              <option value="transparent">Transparan (Untuk Canva/Corel)</option>
+            </select>
+          </div>
+        </div>
+
         <!-- Tombol Download -->
         <div class="download-grid">
-          <button type="button" class="btn-action-main btn-green" onclick="downloadStickerImage()">
+          <button type="button" class="btn-action-main btn-green" onclick="downloadPureQr()">
+            🔳 Unduh QR Saja (High-Res PNG)
+          </button>
+          <button type="button" class="btn-action-main btn-secondary" onclick="downloadStickerImage()">
             🏷️ Unduh Stiker Tempel (PNG)
           </button>
-          <button type="button" class="btn-action-main btn-secondary" onclick="downloadPureQr()">
-            🔳 Unduh QR Saja (High-Res)
-          </button>
         </div>
-        <div class="helper-text" style="text-align: center; margin-top: 10px;">
-          💡 <b>Unduh Stiker:</b> Format label siap cetak & gunting untuk ditempel fisik.<br>
-          💡 <b>Unduh QR Saja:</b> Gambar QR murni untuk dimasukkan ke Canva / CorelDraw / Photoshop.
+
+        <button type="button" class="btn-action-main btn-secondary" style="margin-top: 10px;" onclick="window.print()">
+          🖨️ Cetak Stiker Langsung ke Printer
+        </button>
+
+        <div class="helper-text" style="text-align: center; margin-top: 10px; line-height: 1.5;">
+          💡 <b>Unduh QR Saja:</b> Gambar QR murni resolusi tinggi untuk dimasukkan ke Canva, CorelDraw, atau Word.<br>
+          💡 <b>Unduh Stiker Tempel:</b> Format label berlogo siap cetak & digunting untuk ditempel di sertifikat fisik.
         </div>
       </div>
 
       <!-- Test Live Link Card -->
       <div class="test-scan-box">
         <div class="test-scan-text">
-          <h4>🔍 Cek Tampilan Hasil Pindai</h4>
+          <h4>🔍 Cek Tampilan Hasil Pindai Santri</h4>
           <p>Lihat halaman yang akan muncul saat santri memindai QR Code ini.</p>
         </div>
         <a id="btn-live-test" href="/verify/SIBS-2026-0001" target="_blank" class="btn-test-link">
@@ -578,6 +735,7 @@
   function updateQr() {
     const id = document.getElementById('inp-id').value.trim().toUpperCase() || 'SIBS-2026-0001';
     const nama = document.getElementById('inp-nama').value.trim() || 'Nama Santri';
+    const qrColor = document.getElementById('qr-color-select') ? document.getElementById('qr-color-select').value : '#123d2f';
 
     // Update DOM View Stiker
     document.getElementById('view-sticker-id').textContent = id;
@@ -595,7 +753,7 @@
       text: targetUrl,
       width: 128,
       height: 128,
-      colorDark: "#123d2f",
+      colorDark: qrColor,
       colorLight: "#ffffff",
       correctLevel: QRCode.CorrectLevel.H
     });
@@ -606,6 +764,30 @@
   inputs.forEach(id => {
     document.getElementById(id).addEventListener('input', updateQr);
   });
+
+  // Increment ID (e.g. SIBS-2026-0001 -> SIBS-2026-0002)
+  function incrementId() {
+    const inp = document.getElementById('inp-id');
+    const val = inp.value.trim();
+    const match = val.match(/^(.*?)(\d+)$/);
+    if (match) {
+      const prefix = match[1];
+      const numStr = match[2];
+      const nextNum = parseInt(numStr, 10) + 1;
+      inp.value = prefix + String(nextNum).padStart(numStr.length, '0');
+    } else {
+      inp.value = 'SIBS-2026-0002';
+    }
+    updateQr();
+  }
+
+  // Reset Form untuk santri berikutnya
+  function resetForm() {
+    incrementId();
+    document.getElementById('inp-nama').value = '';
+    document.getElementById('inp-nama').focus();
+    updateQr();
+  }
 
   // Download Stiker Kotak Lengkap (dengan logo & nama)
   function downloadStickerImage() {
@@ -628,24 +810,50 @@
   function downloadPureQr() {
     const qrImg = document.querySelector('#qrcode-box img');
     const id = document.getElementById('inp-id').value.trim() || 'SIBS';
+    const isTransparent = document.getElementById('qr-bg-select').value === 'transparent';
+    const qrColor = document.getElementById('qr-color-select').value;
+
     if (!qrImg || !qrImg.src) {
       alert('QR Code sedang disiapkan, silakan coba 1 detik lagi.');
       return;
     }
 
-    // Gambar ulang di canvas ukuran besar (600x600 px)
+    // Gambar ulang di canvas ukuran besar (800x800 px)
     const canvas = document.createElement('canvas');
-    canvas.width = 600;
-    canvas.height = 600;
+    canvas.width = 800;
+    canvas.height = 800;
     const ctx = canvas.getContext('2d');
     
-    // Background putih
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, 600, 600);
+    if (!isTransparent) {
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, 800, 800);
+    } else {
+      ctx.clearRect(0, 0, 800, 800);
+    }
 
     const img = new Image();
     img.onload = () => {
-      ctx.drawImage(img, 20, 20, 560, 560);
+      if (!isTransparent) {
+        ctx.drawImage(img, 40, 40, 720, 720);
+      } else {
+        // Untuk transparan, render pixel putih menjadi transparan
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = 800;
+        tempCanvas.height = 800;
+        const tempCtx = tempCanvas.getContext('2d');
+        tempCtx.drawImage(img, 40, 40, 720, 720);
+        
+        const imgData = tempCtx.getImageData(0, 0, 800, 800);
+        const data = imgData.data;
+        for (let i = 0; i < data.length; i += 4) {
+          // Jika pixel terang/putih, jadikan transparan
+          if (data[i] > 200 && data[i + 1] > 200 && data[i + 2] > 200) {
+            data[i + 3] = 0;
+          }
+        }
+        ctx.putImageData(imgData, 0, 0);
+      }
+
       const link = document.createElement('a');
       link.download = 'QR-' + id + '.png';
       link.href = canvas.toDataURL('image/png');
