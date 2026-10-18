@@ -24,6 +24,13 @@ const INDEX_HTML = loadStaticFile('index.html');
 const VERIFY_HTML = loadStaticFile('verify.html');
 const GENERATOR_HTML = loadStaticFile('generator-sertifikat.html');
 
+let LOGO_BUFFER = null;
+try {
+  LOGO_BUFFER = fs.readFileSync(path.join(__dirname, 'logo-sibs.png'));
+} catch (e) {
+  console.warn('[WARN] Gagal membaca logo-sibs.png:', e.message);
+}
+
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
   '.css': 'text/css; charset=utf-8',
@@ -43,6 +50,16 @@ function handleRequest(req, res) {
     const host = req.headers.host || 'localhost';
     const reqUrl = new URL(req.url, `http://${host}`);
     const pathname = reqUrl.pathname;
+
+    // Route Logo Yayasan Resmi
+    if (pathname === '/logo-sibs.png' || pathname === '/logo.png') {
+      if (LOGO_BUFFER) {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'image/png');
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+        return res.end(LOGO_BUFFER);
+      }
+    }
 
     // 1. Endpoint API Vercel (/api/verify)
     if (pathname === '/api/verify' || pathname.startsWith('/api/verify/')) {
