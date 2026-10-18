@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Generator QR Code Sertifikat - Syarif Internasional Boarding School</title>
+  <title>Portal Admin: Generator QR Code Sertifikat - Syarif Internasional Boarding School</title>
   
+  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
@@ -13,14 +14,18 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <!-- html2canvas untuk export gambar stiker label -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <!-- JSZip & FileSaver untuk Unduh Semua QR Sekaligus (Batch ZIP) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 
   <style>
     :root {
-      --primary: #123d2f; /* Dark Emerald khas Logo SIBS */
+      --primary: #123d2f; /* Dark Emerald Logo SIBS */
       --primary-hover: #0a251c;
       --primary-light: #ecfdf5;
-      --accent: #d97706; /* Emas */
+      --accent: #d97706; /* Emas Yayasan */
       --accent-light: #fef3c7;
+      --success: #059669;
       --slate-900: #0f172a;
       --slate-800: #1e293b;
       --slate-700: #334155;
@@ -29,6 +34,9 @@
       --slate-200: #e2e8f0;
       --slate-100: #f8fafc;
       --radius: 16px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+      --shadow-md: 0 4px 20px -2px rgba(18, 61, 47, 0.08);
+      --shadow-lg: 0 16px 32px -4px rgba(18, 61, 47, 0.12);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -37,10 +45,10 @@
       background: #f1f5f9;
       color: var(--slate-800);
       min-height: 100vh;
-      padding: 24px 16px;
+      padding-bottom: 60px;
     }
 
-    /* Auth Screen (PIN Lock) */
+    /* Auth Screen (PIN Gate) */
     #auth-screen {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -53,16 +61,16 @@
     }
     .auth-card {
       background: #ffffff;
-      border-radius: 20px;
-      padding: 36px 28px;
+      border-radius: 24px;
+      padding: 40px 32px;
       width: 100%;
-      max-width: 420px;
+      max-width: 430px;
       text-align: center;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.45);
     }
     .auth-logo {
-      width: 76px;
-      height: 76px;
+      width: 80px;
+      height: 80px;
       object-fit: contain;
       margin: 0 auto 16px auto;
       display: block;
@@ -71,26 +79,27 @@
       font-size: 19px;
       font-weight: 800;
       color: var(--primary);
-      margin-bottom: 4px;
+      margin-bottom: 6px;
     }
     .auth-card p {
-      font-size: 12.5px;
+      font-size: 13px;
       color: var(--slate-600);
       margin-bottom: 24px;
       line-height: 1.5;
     }
     .pin-input {
       width: 100%;
-      padding: 13px;
+      padding: 14px;
       text-align: center;
-      letter-spacing: 4px;
-      font-size: 18px;
+      letter-spacing: 6px;
+      font-size: 20px;
       font-weight: 700;
       font-family: 'JetBrains Mono', monospace;
       border: 2px solid var(--slate-200);
       border-radius: 12px;
       outline: none;
-      margin-bottom: 14px;
+      margin-bottom: 16px;
+      transition: all 0.2s;
     }
     .pin-input:focus {
       border-color: var(--primary);
@@ -110,23 +119,24 @@
     }
     .btn-login:hover { background: var(--primary-hover); }
 
-    /* Admin Workspace */
-    .app-container {
-      max-width: 1180px;
-      margin: 0 auto;
-    }
-    .admin-header {
+    /* Admin Workspace Navbar */
+    .admin-navbar {
       background: #ffffff;
-      border-radius: var(--radius);
-      padding: 18px 24px;
+      border-bottom: 1px solid var(--slate-200);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow-sm);
+    }
+    .nav-container {
+      max-width: 1360px;
+      margin: 0 auto;
+      padding: 14px 24px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
-      gap: 14px;
-      margin-bottom: 20px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.04);
-      border: 1px solid var(--slate-200);
+      gap: 16px;
     }
     .brand-wrap {
       display: flex;
@@ -134,278 +144,425 @@
       gap: 14px;
     }
     .brand-logo-img {
-      width: 50px;
-      height: 50px;
+      width: 48px;
+      height: 48px;
       object-fit: contain;
     }
-    .admin-header-title h1 {
-      font-size: 18px;
+    .brand-title h1 {
+      font-size: 17px;
       font-weight: 800;
       color: var(--primary);
       line-height: 1.2;
     }
-    .admin-header-title p {
+    .brand-title p {
       font-size: 12px;
-      color: var(--slate-600);
-      margin-top: 2px;
+      color: var(--slate-500);
     }
-    .admin-actions {
+    .nav-controls {
       display: flex;
+      align-items: center;
       gap: 10px;
+      flex-wrap: wrap;
     }
-    .btn-nav {
-      text-decoration: none;
-      font-size: 12.5px;
-      font-weight: 600;
+    .btn-nav-act {
+      font-size: 12px;
+      font-weight: 700;
       padding: 8px 14px;
-      border-radius: 8px;
-      background: #f1f5f9;
+      border-radius: 9px;
+      border: 1px solid var(--slate-200);
+      background: #ffffff;
       color: var(--slate-700);
-      border: 1px solid #cbd5e1;
+      cursor: pointer;
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s;
     }
-    .btn-nav:hover { background: #e2e8f0; }
-
-    /* Workflow Banner (Panduan Jelas) */
-    .workflow-banner {
-      background: linear-gradient(135deg, #123d2f 0%, #1e4d3d 100%);
+    .btn-nav-act:hover {
+      background: var(--slate-100);
+      border-color: #cbd5e1;
+    }
+    .btn-nav-act.primary {
+      background: var(--primary);
       color: white;
-      border-radius: var(--radius);
-      padding: 20px 24px;
-      margin-bottom: 24px;
-      box-shadow: 0 8px 20px -4px rgba(18, 61, 47, 0.25);
+      border-color: var(--primary);
     }
-    .workflow-banner h3 {
-      font-size: 15px;
-      font-weight: 800;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 8px;
-      color: #fde68a;
+    .btn-nav-act.primary:hover {
+      background: var(--primary-hover);
     }
-    .workflow-steps {
+
+    /* Main Container */
+    .app-main {
+      max-width: 1360px;
+      margin: 24px auto;
+      padding: 0 20px;
+    }
+
+    /* Stats Overview */
+    .stats-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 14px;
-      margin-top: 14px;
+      gap: 16px;
+      margin-bottom: 24px;
     }
-    @media (max-width: 860px) {
-      .workflow-steps { grid-template-columns: 1fr 1fr; }
+    @media (max-width: 990px) {
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
     }
-    @media (max-width: 480px) {
-      .workflow-steps { grid-template-columns: 1fr; }
+    @media (max-width: 540px) {
+      .stats-grid { grid-template-columns: 1fr; }
     }
-    .step-box {
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 10px;
-      padding: 12px 14px;
+    .stat-card {
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 18px 20px;
+      border: 1px solid var(--slate-200);
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      align-items: center;
+      gap: 16px;
     }
-    .step-num {
-      font-size: 11px;
+    .stat-icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 12px;
+      background: var(--primary-light);
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+    .stat-info .stat-num {
+      font-size: 22px;
       font-weight: 800;
-      color: #fde68a;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 4px;
+      color: var(--slate-900);
+      line-height: 1.2;
     }
-    .step-desc {
+    .stat-info .stat-label {
       font-size: 12px;
-      line-height: 1.4;
-      color: #e2e8f0;
+      color: var(--slate-500);
+      font-weight: 600;
+      margin-top: 2px;
     }
 
-    /* Main Grid */
-    .main-grid {
-      display: grid;
-      grid-template-columns: 460px 1fr;
-      gap: 24px;
-      align-items: start;
-    }
-    @media (max-width: 980px) {
-      .main-grid { grid-template-columns: 1fr; }
-    }
-
-    /* Form Card */
-    .card {
+    /* Action Control Toolbar */
+    .toolbar-card {
       background: #ffffff;
       border-radius: var(--radius);
-      padding: 26px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+      padding: 18px 22px;
       border: 1px solid var(--slate-200);
-    }
-    .card-title {
-      font-size: 15px;
-      font-weight: 800;
-      color: var(--primary);
-      margin-bottom: 18px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      padding-bottom: 12px;
-      border-bottom: 1px solid var(--slate-200);
-    }
-    .form-group {
-      margin-bottom: 16px;
-    }
-    .label-row {
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 20px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 6px;
+      flex-wrap: wrap;
+      gap: 14px;
     }
-    .form-group label {
-      display: block;
+    .toolbar-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+      max-width: 480px;
+    }
+    .search-input-box {
+      position: relative;
+      width: 100%;
+    }
+    .search-input-box input {
+      width: 100%;
+      padding: 10px 14px 10px 38px;
+      border: 1.5px solid var(--slate-200);
+      border-radius: 10px;
+      font-size: 13px;
+      outline: none;
+      font-family: inherit;
+    }
+    .search-input-box input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(18, 61, 47, 0.1);
+    }
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 14px;
+      color: var(--slate-400);
+      pointer-events: none;
+    }
+    .toolbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .btn-tool {
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-size: 12.5px;
+      font-weight: 700;
+      border: 1px solid var(--slate-200);
+      background: #ffffff;
+      color: var(--slate-800);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .btn-tool:hover { background: var(--slate-100); }
+    .btn-tool.sync {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+    .btn-tool.sync:hover { background: var(--primary-hover); }
+    .btn-tool.batch {
+      background: #f59e0b;
+      color: #ffffff;
+      border-color: #d97706;
+    }
+    .btn-tool.batch:hover { background: #d97706; }
+
+    /* Students Table Card */
+    .table-card {
+      background: #ffffff;
+      border-radius: var(--radius);
+      border: 1px solid var(--slate-200);
+      box-shadow: var(--shadow-md);
+      overflow: hidden;
+    }
+    .table-responsive {
+      width: 100%;
+      overflow-x: auto;
+    }
+    table.data-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+    table.data-table thead {
+      background: #f8fafc;
+      border-bottom: 2px solid var(--slate-200);
+    }
+    table.data-table th {
+      padding: 14px 18px;
       font-size: 11.5px;
       font-weight: 700;
       color: var(--slate-600);
       text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.6px;
+      white-space: nowrap;
     }
-    .btn-quick {
-      background: none;
-      border: none;
-      color: var(--primary);
-      font-size: 11.5px;
-      font-weight: 700;
-      cursor: pointer;
-      text-decoration: underline;
+    table.data-table tbody tr {
+      border-bottom: 1px solid var(--slate-200);
+      transition: background 0.15s;
     }
-    .btn-quick:hover { color: var(--accent); }
-    .form-group input, .form-group select {
-      width: 100%;
-      padding: 11px 13px;
-      border: 1.5px solid #cbd5e1;
-      border-radius: 9px;
-      font-size: 13.5px;
-      font-family: inherit;
-      color: var(--slate-900);
-      outline: none;
-      transition: border-color 0.2s;
+    table.data-table tbody tr:hover {
+      background: #f8fafc;
     }
-    .form-group input:focus, .form-group select:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(18, 61, 47, 0.1);
-    }
-    .helper-text {
-      font-size: 11px;
-      color: var(--slate-500);
-      margin-top: 4px;
+    table.data-table td {
+      padding: 14px 18px;
+      font-size: 13px;
+      vertical-align: middle;
     }
 
-    /* Action Buttons */
-    .btn-action-main {
-      width: 100%;
-      padding: 13px;
-      border-radius: 10px;
-      font-size: 13.5px;
+    /* Table Badges & Tags */
+    .id-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
       font-weight: 700;
-      cursor: pointer;
-      border: none;
+      color: var(--primary);
+      background: var(--primary-light);
+      padding: 4px 8px;
+      border-radius: 6px;
+      border: 1px solid #a7f3d0;
+      white-space: nowrap;
+    }
+    .student-name {
+      font-size: 13.5px;
+      font-weight: 800;
+      color: var(--slate-900);
+      display: block;
+    }
+    .badge-predikat {
+      font-size: 11px;
+      font-weight: 700;
+      color: #b45309;
+      background: #fef3c7;
+      padding: 3px 8px;
+      border-radius: 6px;
+      display: inline-block;
+      white-space: nowrap;
+    }
+    .status-dot {
       display: inline-flex;
       align-items: center;
-      justify-content: center;
-      gap: 8px;
-      transition: all 0.2s;
+      gap: 5px;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #15803d;
     }
-    .btn-green { background: var(--primary); color: white; }
-    .btn-green:hover { background: var(--primary-hover); }
-    .btn-secondary { background: #f8fafc; color: var(--slate-800); border: 1.5px solid #cbd5e1; }
-    .btn-secondary:hover { background: #e2e8f0; }
-
-    /* Preview Output Area */
-    .preview-column {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
+    .dot {
+      width: 7px;
+      height: 7px;
+      background: #10b981;
+      border-radius: 50%;
     }
 
-    /* Sticker Label Container */
-    .sticker-container {
+    /* Mini QR Box in Table */
+    .qr-mini-thumb {
+      width: 52px;
+      height: 52px;
       background: #ffffff;
-      border: 2px dashed #cbd5e1;
-      border-radius: 16px;
-      padding: 26px 20px;
+      padding: 3px;
+      border-radius: 6px;
+      border: 1px solid var(--slate-200);
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      transition: transform 0.2s;
+    }
+    .qr-mini-thumb:hover {
+      transform: scale(1.1);
+      border-color: var(--primary);
+    }
+    .qr-mini-thumb img {
+      width: 44px !important;
+      height: 44px !important;
+      display: block;
     }
 
-    /* THE STICKER BADGE (Untuk ditempel fisik ke sertifikat manual) */
-    #qr-sticker-badge {
-      width: 240px;
+    /* Row Action Buttons */
+    .row-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+    .btn-action-qr {
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-size: 11.5px;
+      font-weight: 700;
+      border: 1px solid var(--slate-200);
+      background: #ffffff;
+      color: var(--slate-700);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s;
+      text-decoration: none;
+    }
+    .btn-action-qr:hover {
+      background: var(--slate-100);
+      border-color: #cbd5e1;
+    }
+    .btn-action-qr.green {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+    .btn-action-qr.green:hover {
+      background: var(--primary-hover);
+    }
+    .btn-action-qr.gold {
+      background: var(--accent-light);
+      color: #92400e;
+      border-color: #fde68a;
+    }
+    .btn-action-qr.gold:hover {
+      background: #fde68a;
+    }
+
+    /* Hidden Sandbox for off-screen QR generation & high-res canvas */
+    #qr-sandbox {
+      position: absolute;
+      left: -9999px;
+      top: -9999px;
+      width: 400px;
+      height: 400px;
+      visibility: hidden;
+    }
+
+    /* Off-screen Sticker Canvas Template */
+    #sticker-render-box {
+      position: absolute;
+      left: -9999px;
+      top: -9999px;
+      width: 250px;
       background: #ffffff;
       border: 2px solid #123d2f;
       border-radius: 14px;
-      padding: 18px 14px;
+      padding: 16px 14px;
       text-align: center;
-      box-shadow: 0 8px 24px rgba(18, 61, 47, 0.1);
+      box-sizing: border-box;
       display: flex;
       flex-direction: column;
       align-items: center;
-      position: relative;
     }
-    .sticker-logo-top {
+    .sticker-logo-src {
       width: 44px;
       height: 44px;
       object-fit: contain;
       margin-bottom: 4px;
     }
-    .sticker-title-top {
+    .sticker-head-text {
       font-size: 9px;
       font-weight: 800;
       color: #123d2f;
       letter-spacing: 0.6px;
       text-transform: uppercase;
       line-height: 1.2;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
     }
-    #qrcode-box {
+    .sticker-qr-slot {
       width: 140px;
       height: 140px;
       background: white;
-      padding: 6px;
+      padding: 4px;
       border-radius: 8px;
       border: 1px solid #e2e8f0;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
     }
-    #qrcode-box img {
-      width: 128px !important;
-      height: 128px !important;
+    .sticker-qr-slot img {
+      width: 130px !important;
+      height: 130px !important;
       display: block;
     }
-    .sticker-cert-id {
+    .sticker-id-pill {
       font-family: 'JetBrains Mono', monospace;
       font-size: 11px;
       font-weight: 700;
       color: #123d2f;
       background: #ecfdf5;
-      padding: 3px 8px;
+      padding: 2px 8px;
       border-radius: 5px;
       border: 1px solid #a7f3d0;
       display: inline-block;
       margin-bottom: 4px;
     }
-    .sticker-santri-name {
+    .sticker-name-txt {
       font-size: 12px;
       font-weight: 800;
       color: #0f172a;
-      max-width: 210px;
+      max-width: 220px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
       margin-bottom: 4px;
     }
-    .sticker-scan-hint {
+    .sticker-sub-hint {
       font-size: 8px;
       font-weight: 700;
       color: #64748b;
@@ -413,96 +570,90 @@
       text-transform: uppercase;
     }
 
-    /* Option Tabs */
-    .download-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-top: 16px;
+    /* Modal Backdrop */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-card {
+      background: #ffffff;
+      border-radius: 20px;
       width: 100%;
+      max-width: 520px;
+      padding: 28px;
+      box-shadow: var(--shadow-lg);
+      position: relative;
+      max-height: 90vh;
+      overflow-y: auto;
     }
-    @media (max-width: 500px) {
-      .download-grid { grid-template-columns: 1fr; }
-    }
-
-    .qr-options-box {
-      background: #f8fafc;
-      border: 1px solid var(--slate-200);
-      border-radius: 12px;
-      padding: 14px;
-      margin-top: 14px;
+    .modal-header {
       display: flex;
-      flex-wrap: wrap;
-      gap: 14px;
-      align-items: center;
       justify-content: space-between;
-      font-size: 12px;
-    }
-    .qr-option-item {
-      display: flex;
       align-items: center;
-      gap: 6px;
+      margin-bottom: 18px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--slate-200);
     }
-
-    .test-scan-box {
-      background: #ecfdf5;
-      border: 1.5px solid #a7f3d0;
-      border-radius: 12px;
-      padding: 16px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-    .test-scan-text h4 {
-      font-size: 13px;
+    .modal-header h3 {
+      font-size: 17px;
       font-weight: 800;
-      color: #123d2f;
-      margin-bottom: 2px;
+      color: var(--primary);
     }
-    .test-scan-text p {
-      font-size: 11.5px;
-      color: #065f46;
+    .btn-close-modal {
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: var(--slate-400);
     }
-    .btn-test-link {
-      background: #123d2f;
-      color: white;
-      text-decoration: none;
-      font-size: 12px;
-      font-weight: 700;
-      padding: 9px 16px;
-      border-radius: 8px;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      transition: all 0.2s;
-    }
-    .btn-test-link:hover { background: #0a251c; }
+    .btn-close-modal:hover { color: var(--slate-800); }
 
-    /* Print only sticker */
+    /* Print Sticker A4 Grid */
+    #print-sheet-wrapper {
+      display: none;
+    }
     @media print {
       body * { visibility: hidden; }
-      #qr-sticker-badge, #qr-sticker-badge * { visibility: visible; }
-      #qr-sticker-badge {
+      #print-sheet-wrapper, #print-sheet-wrapper * { visibility: visible; }
+      #print-sheet-wrapper {
+        display: block !important;
         position: absolute;
-        left: 20px;
-        top: 20px;
-        box-shadow: none;
-        border: 2px solid #000;
+        left: 0;
+        top: 0;
+        width: 100%;
+      }
+      .a4-print-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
+        padding: 10mm;
+      }
+      .print-sticker-item {
+        border: 1.5px solid #000;
+        border-radius: 10px;
+        padding: 10px;
+        text-align: center;
+        page-break-inside: avoid;
       }
     }
   </style>
 </head>
 <body>
 
-<!-- ================= AUTH SCREEN (PIN LOCK) ================= -->
+<!-- ================= 1. AUTH SCREEN (PIN GATE) ================= -->
 <div id="auth-screen">
   <div class="auth-card">
     <img src="/logo-sibs.png" alt="Logo SIBS" class="auth-logo" />
-    <h2>Generator QR Code Sertifikat</h2>
+    <h2>Portal Admin Sertifikat</h2>
     <p>
-      Khusus Pengurus & Admin<br>
+      Khusus Pengurus Yayasan & Administrator<br>
       <b>Syarif Internasional Boarding School</b>
     </p>
 
@@ -510,199 +661,241 @@
       type="password" 
       id="admin-pin" 
       class="pin-input" 
-      placeholder="KODE PIN" 
+      placeholder="PIN ADMIN" 
       maxlength="20"
       autocomplete="off"
     />
-    <button type="button" class="btn-login" onclick="checkAuth()">Buka Akses Admin</button>
+    <button type="button" class="btn-login" onclick="checkAuth()">Buka Dashboard Admin</button>
   </div>
 </div>
 
-<!-- ================= MAIN WORKSPACE ================= -->
-<div class="app-container" id="admin-workspace" style="display: none;">
+<!-- ================= 2. MAIN ADMIN WORKSPACE ================= -->
+<div id="admin-workspace" style="display: none;">
   
-  <!-- Header Bar -->
-  <div class="admin-header">
-    <div class="brand-wrap">
-      <img src="/logo-sibs.png" alt="Logo SIBS" class="brand-logo-img" />
-      <div class="admin-header-title">
-        <h1>Pembuat QR Code Tempel Sertifikat (Admin)</h1>
-        <p>Syarif Internasional Boarding School • Syarief Institute Bondowoso</p>
-      </div>
-    </div>
-    <div class="admin-actions">
-      <a href="/" class="btn-nav" target="_blank">🌐 Web Verifikasi Santri</a>
-      <button type="button" class="btn-nav" onclick="logoutAdmin()">🚪 Kunci / Keluar</button>
-    </div>
-  </div>
-
-  <!-- Workflow Banner: Penjelasan Konsep Kerja Yayasan -->
-  <div class="workflow-banner">
-    <h3>📌 Alur Kerja Pembuatan Sertifikat Yayasan</h3>
-    <p style="font-size: 12.5px; opacity: 0.95; line-height: 1.5;">
-      Sistem ini <b>hanya menghasilkan QR Code</b>. Sertifikat fisik dibuat/didesain manual oleh pengurus. QR Code yang diunduh dari sini tinggal ditempelkan ke sertifikat manual tersebut. Ketika QR Code di-scan, sistem otomatis menampilkan data santri untuk memverifikasi keasliannya.
-    </p>
-    <div class="workflow-steps">
-      <div class="step-box">
-        <div class="step-num">Langkah 1</div>
-        <div class="step-desc">Isi nomor sertifikat dan nama santri di form bawah ini.</div>
-      </div>
-      <div class="step-box">
-        <div class="step-num">Langkah 2</div>
-        <div class="step-desc">Unduh QR Code murni (atau unduh format stiker siap cetak).</div>
-      </div>
-      <div class="step-box">
-        <div class="step-num">Langkah 3</div>
-        <div class="step-desc">Tempelkan QR Code pada sertifikat manual (Canva / Corel / kertas blangko).</div>
-      </div>
-      <div class="step-box">
-        <div class="step-num">Langkah 4</div>
-        <div class="step-desc">Saat di-scan pakai HP santri, web memverifikasi keasliannya secara resmi.</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="main-grid">
-    
-    <!-- Form Input Data -->
-    <div class="card">
-      <div class="card-title">
-        <span>📝 Registrasi Data Santri</span>
-        <button type="button" class="btn-quick" onclick="resetForm()">🔄 Bersihkan / Baru</button>
-      </div>
-
-      <div class="form-group">
-        <div class="label-row">
-          <label>Nomor Sertifikat (ID Unik)</label>
-          <button type="button" class="btn-quick" onclick="incrementId()">+ Nomor Selanjutnya</button>
+  <!-- Navigation Header -->
+  <nav class="admin-navbar">
+    <div class="nav-container">
+      <div class="brand-wrap">
+        <img src="/logo-sibs.png" alt="Logo SIBS" class="brand-logo-img" />
+        <div class="brand-title">
+          <h1>Generator QR Code Sertifikat (Admin)</h1>
+          <p>Syarif Internasional Boarding School • Syarief Institute Bondowoso</p>
         </div>
-        <input type="text" id="inp-id" value="SIBS-2026-0001" placeholder="cth: SIBS-2026-0001" />
-        <div class="helper-text">Format baku yayasan: <code>SIBS-2026-0001</code></div>
       </div>
-
-      <div class="form-group">
-        <label>Nama Santri / Penerima</label>
-        <input type="text" id="inp-nama" value="Agung Budi Santoso" placeholder="Nama Lengkap Santri" />
-      </div>
-
-      <div class="form-group">
-        <label>Nama Kegiatan / Lomba</label>
-        <input type="text" id="inp-lomba" value="Lomba Adzan" placeholder="cth: Lomba Adzan / Tahfidz 30 Juz" />
-      </div>
-
-      <div class="form-group">
-        <label>Predikat / Prestasi</label>
-        <input type="text" id="inp-predikat" value="Juara 1" placeholder="cth: Juara 1 / Mutqin / Peserta" />
-      </div>
-
-      <div class="form-group">
-        <label>Tanggal Diterbitkan</label>
-        <input type="text" id="inp-tanggal" value="23 Oktober 2026" placeholder="cth: 23 Oktober 2026" />
-      </div>
-
-      <div style="margin-top: 24px; padding-top: 18px; border-top: 1px dashed var(--slate-200); display: flex; flex-direction: column; gap: 10px;">
-        <button type="button" class="btn-action-main btn-secondary" onclick="copySheetsRow()">
-          📋 Salin 1 Baris untuk Google Sheets
+      <div class="nav-controls">
+        <button type="button" class="btn-nav-act" onclick="openSettingsModal()">
+          ⚙️ Pengaturan Spreadsheet
         </button>
-        <div class="helper-text" style="text-align: center;">
-          Klik tombol di atas lalu tekan <code>Ctrl + V</code> di baris baru Google Sheets yayasan.
-        </div>
-      </div>
-    </div>
-
-    <!-- Output & Download Panel -->
-    <div class="preview-column">
-      
-      <!-- Box Stiker QR -->
-      <div class="card">
-        <div class="card-title">
-          <span>🏷️ Pratinjau QR Code Siap Tempel</span>
-          <span style="font-size: 11px; font-weight: 700; color: #123d2f; background: #ecfdf5; padding: 3px 8px; border-radius: 6px;">Status: Valid</span>
-        </div>
-        <p style="font-size: 12.5px; color: var(--slate-600); margin-bottom: 18px;">
-          QR Code ini akan langsung mengarahkan ke halaman verifikasi resmi saat dipindai kamera HP.
-        </p>
-
-        <div class="sticker-container">
-          <!-- The Sticker Badge Element -->
-          <div id="qr-sticker-badge">
-            <img src="/logo-sibs.png" alt="Logo SIBS" class="sticker-logo-top" />
-            <div class="sticker-title-top">SYARIF INTERNASIONAL BOARDING SCHOOL</div>
-            <div id="qrcode-box"></div>
-            <div id="view-sticker-id" class="sticker-cert-id">SIBS-2026-0001</div>
-            <div id="view-sticker-nama" class="sticker-santri-name">Agung Budi Santoso</div>
-            <div class="sticker-scan-hint">PINDAI UNTUK VERIFIKASI KEASLIAN</div>
-          </div>
-        </div>
-
-        <!-- Opsi Tambahan untuk QR -->
-        <div class="qr-options-box">
-          <div class="qr-option-item">
-            <label for="qr-color-select" style="font-weight: 700;">Warna QR:</label>
-            <select id="qr-color-select" style="padding: 4px 8px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 12px;" onchange="updateQr()">
-              <option value="#123d2f" selected>Hijau Emerald SIBS</option>
-              <option value="#000000">Hitam Pekat Standar</option>
-            </select>
-          </div>
-          <div class="qr-option-item">
-            <label for="qr-bg-select" style="font-weight: 700;">Latar QR Saja:</label>
-            <select id="qr-bg-select" style="padding: 4px 8px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 12px;">
-              <option value="white" selected>Putih Bersih</option>
-              <option value="transparent">Transparan (Untuk Canva/Corel)</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Tombol Download -->
-        <div class="download-grid">
-          <button type="button" class="btn-action-main btn-green" onclick="downloadPureQr()">
-            🔳 Unduh QR Saja (High-Res PNG)
-          </button>
-          <button type="button" class="btn-action-main btn-secondary" onclick="downloadStickerImage()">
-            🏷️ Unduh Stiker Tempel (PNG)
-          </button>
-        </div>
-
-        <button type="button" class="btn-action-main btn-secondary" style="margin-top: 10px;" onclick="window.print()">
-          🖨️ Cetak Stiker Langsung ke Printer
-        </button>
-
-        <div class="helper-text" style="text-align: center; margin-top: 10px; line-height: 1.5;">
-          💡 <b>Unduh QR Saja:</b> Gambar QR murni resolusi tinggi untuk dimasukkan ke Canva, CorelDraw, atau Word.<br>
-          💡 <b>Unduh Stiker Tempel:</b> Format label berlogo siap cetak & digunting untuk ditempel di sertifikat fisik.
-        </div>
-      </div>
-
-      <!-- Test Live Link Card -->
-      <div class="test-scan-box">
-        <div class="test-scan-text">
-          <h4>🔍 Cek Tampilan Hasil Pindai Santri</h4>
-          <p>Lihat halaman yang akan muncul saat santri memindai QR Code ini.</p>
-        </div>
-        <a id="btn-live-test" href="/verify/SIBS-2026-0001" target="_blank" class="btn-test-link">
-          Buka Hasil Verifikasi ➔
+        <a href="/" class="btn-nav-act" target="_blank">
+          🌐 Web Verifikasi Publik
         </a>
+        <button type="button" class="btn-nav-act" onclick="logoutAdmin()">
+          🚪 Kunci / Keluar
+        </button>
       </div>
+    </div>
+  </nav>
 
+  <!-- Main Body Content -->
+  <main class="app-main">
+    
+    <!-- Top Statistics Overview -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">🎓</div>
+        <div class="stat-info">
+          <div class="stat-num" id="stat-total">0</div>
+          <div class="stat-label">Total Santri Terdaftar</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background: #fef3c7; color: #b45309;">📊</div>
+        <div class="stat-info">
+          <div class="stat-num" id="stat-source">Memuat...</div>
+          <div class="stat-label">Sumber Basis Data</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background: #e0f2fe; color: #0369a1;">🏷️</div>
+        <div class="stat-info">
+          <div class="stat-num" id="stat-active">0</div>
+          <div class="stat-label">Sertifikat Sah & Aktif</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background: #f1f5f9; color: #475569;">⏱️</div>
+        <div class="stat-info">
+          <div class="stat-num" style="font-size: 15px;" id="stat-last-sync">-</div>
+          <div class="stat-label">Sinkronisasi Terakhir</div>
+        </div>
+      </div>
     </div>
 
-  </div>
+    <!-- Toolbar: Search & Action Buttons -->
+    <div class="toolbar-card">
+      <div class="toolbar-left">
+        <div class="search-input-box">
+          <span class="search-icon">🔍</span>
+          <input 
+            type="text" 
+            id="search-filter" 
+            placeholder="Cari berdasarkan Nama Santri, ID, atau Lomba..." 
+            oninput="filterTable()" 
+          />
+        </div>
+      </div>
+      <div class="toolbar-actions">
+        <button type="button" class="btn-tool sync" id="btn-sync" onclick="loadCertificatesData()">
+          🔄 Sinkronkan Google Sheets
+        </button>
+        <button type="button" class="btn-tool batch" onclick="downloadAllQrZip()">
+          📦 Unduh Semua QR Sekaligus (ZIP)
+        </button>
+        <button type="button" class="btn-tool" onclick="openPrintPreview()">
+          🖨️ Cetak Lembar Stiker A4
+        </button>
+        <button type="button" class="btn-tool" onclick="openManualAddModal()">
+          ➕ Input Cepat / Tambah
+        </button>
+      </div>
+    </div>
 
+    <!-- Main Students Table -->
+    <div class="table-card">
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width: 50px;">No</th>
+              <th style="width: 140px;">No. Sertifikat</th>
+              <th>Nama Santri / Penerima</th>
+              <th>Kegiatan / Lomba</th>
+              <th style="width: 130px;">Predikat</th>
+              <th style="width: 120px;">Tanggal</th>
+              <th style="width: 80px; text-align: center;">Mini QR</th>
+              <th style="width: 240px; text-align: center;">Aksi Download QR</th>
+            </tr>
+          </thead>
+          <tbody id="student-table-body">
+            <tr>
+              <td colspan="8" style="text-align: center; padding: 40px; color: var(--slate-500);">
+                Sedang menghubungkan ke Google Sheets...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ================= 3. MODAL PENGATURAN SPREADSHEET ================= -->
+<div class="modal-overlay" id="modal-settings">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3>⚙️ Pengaturan Sumber Data Google Sheets</h3>
+      <button type="button" class="btn-close-modal" onclick="closeSettingsModal()">✕</button>
+    </div>
+    <div style="font-size: 13px; color: var(--slate-600); margin-bottom: 16px; line-height: 1.5;">
+      Masukkan <b>Spreadsheet ID</b> Google Sheets yayasan Anda. Data santri di tabel akan otomatis ditarik langsung dari sheet ini.
+    </div>
+    <div style="margin-bottom: 16px;">
+      <label style="display: block; font-size: 11.5px; font-weight: 700; color: var(--slate-700); margin-bottom: 6px; text-transform: uppercase;">
+        Spreadsheet ID atau Link Google Sheets:
+      </label>
+      <input 
+        type="text" 
+        id="input-sheet-id" 
+        style="width: 100%; padding: 11px; border: 1.5px solid var(--slate-200); border-radius: 9px; font-size: 13px; outline: none;" 
+        placeholder="cth: 1sE2hJ_W9... atau paste URL lengkap spreadsheet"
+      />
+      <div style="font-size: 11px; color: var(--slate-500); margin-top: 5px;">
+        💡 Pastikan Google Sheets Anda diset <b>"Siapa saja yang memiliki link dapat melihat (Viewer)"</b>.
+      </div>
+    </div>
+    <div style="display: flex; gap: 10px; justify-content: flex-end;">
+      <button type="button" class="btn-tool" onclick="closeSettingsModal()">Batal</button>
+      <button type="button" class="btn-tool sync" onclick="saveSheetSettings()">Simpan & Muat Ulang</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= 4. MODAL INPUT CEPAT SATU SANTRI ================= -->
+<div class="modal-overlay" id="modal-manual-add">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3>➕ Input Cepat / Buat QR Dadakan</h3>
+      <button type="button" class="btn-close-modal" onclick="closeManualAddModal()">✕</button>
+    </div>
+    <div style="font-size: 12.5px; color: var(--slate-600); margin-bottom: 16px;">
+      Gunakan form ini untuk membuat QR Code langsung tanpa harus membuka spreadsheet. Anda juga bisa menyalin barisnya ke Google Sheets.
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
+      <div>
+        <label style="font-size: 11px; font-weight: 700; color: var(--slate-600); text-transform: uppercase; display: block; margin-bottom: 4px;">Nomor Sertifikat (ID):</label>
+        <input type="text" id="m-id" value="SIBS-2026-0006" style="width: 100%; padding: 10px; border: 1.5px solid var(--slate-200); border-radius: 8px; font-size: 13px;" />
+      </div>
+      <div>
+        <label style="font-size: 11px; font-weight: 700; color: var(--slate-600); text-transform: uppercase; display: block; margin-bottom: 4px;">Nama Lengkap Santri:</label>
+        <input type="text" id="m-nama" placeholder="cth: Ahmad Fauzi" style="width: 100%; padding: 10px; border: 1.5px solid var(--slate-200); border-radius: 8px; font-size: 13px;" />
+      </div>
+      <div>
+        <label style="font-size: 11px; font-weight: 700; color: var(--slate-600); text-transform: uppercase; display: block; margin-bottom: 4px;">Kegiatan / Lomba:</label>
+        <input type="text" id="m-lomba" value="Tahfidz Al-Qur'an" style="width: 100%; padding: 10px; border: 1.5px solid var(--slate-200); border-radius: 8px; font-size: 13px;" />
+      </div>
+      <div>
+        <label style="font-size: 11px; font-weight: 700; color: var(--slate-600); text-transform: uppercase; display: block; margin-bottom: 4px;">Predikat / Prestasi:</label>
+        <input type="text" id="m-predikat" value="Juara 1" style="width: 100%; padding: 10px; border: 1.5px solid var(--slate-200); border-radius: 8px; font-size: 13px;" />
+      </div>
+      <div>
+        <label style="font-size: 11px; font-weight: 700; color: var(--slate-600); text-transform: uppercase; display: block; margin-bottom: 4px;">Tanggal Terbit:</label>
+        <input type="text" id="m-tanggal" value="23 Oktober 2026" style="width: 100%; padding: 10px; border: 1.5px solid var(--slate-200); border-radius: 8px; font-size: 13px;" />
+      </div>
+    </div>
+    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+      <button type="button" class="btn-tool sync" style="flex: 1;" onclick="submitManualRecord()">
+        ⬇️ Unduh QR Santri Ini
+      </button>
+      <button type="button" class="btn-tool" onclick="copyManualRow()">
+        📋 Salin Baris Google Sheets
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= 5. OFF-SCREEN RENDERING SANDBOX ================= -->
+<div id="qr-sandbox"></div>
+
+<!-- Off-screen Sticker Element untuk HTML2Canvas Export -->
+<div id="sticker-render-box">
+  <img src="/logo-sibs.png" alt="Logo SIBS" class="sticker-logo-src" />
+  <div class="sticker-head-text">SYARIF INTERNASIONAL BOARDING SCHOOL</div>
+  <div class="sticker-qr-slot" id="stk-qr-box"></div>
+  <div class="sticker-id-pill" id="stk-id-txt">SIBS-2026-0001</div>
+  <div class="sticker-name-txt" id="stk-nama-txt">Nama Santri</div>
+  <div class="sticker-sub-hint">PINDAI UNTUK VERIFIKASI KEASLIAN</div>
+</div>
+
+<!-- ================= 6. A4 PRINT STICKER SHEET CONTAINER ================= -->
+<div id="print-sheet-wrapper">
+  <div class="a4-print-grid" id="a4-grid-container"></div>
 </div>
 
 <script>
   const CORRECT_PIN = 'syarief2026';
-  let qrInstance = null;
+  let CERTIFICATES_DATA = [];
+  let FILTERED_DATA = [];
 
+  // ================= AUTH MANAGEMENT =================
   window.addEventListener('DOMContentLoaded', () => {
     if (sessionStorage.getItem('sibs_admin_auth') === 'true') {
-      showWorkspace();
+      showDashboard();
     } else {
       document.getElementById('auth-screen').style.display = 'flex';
       document.getElementById('admin-workspace').style.display = 'none';
       document.getElementById('admin-pin').focus();
     }
-    updateQr();
   });
 
   document.getElementById('admin-pin').addEventListener('keydown', (e) => {
@@ -713,7 +906,7 @@
     const pin = document.getElementById('admin-pin').value.trim();
     if (pin === CORRECT_PIN) {
       sessionStorage.setItem('sibs_admin_auth', 'true');
-      showWorkspace();
+      showDashboard();
     } else {
       alert('❌ Kode PIN Salah! Akses ditolak.');
       document.getElementById('admin-pin').value = '';
@@ -721,10 +914,10 @@
     }
   }
 
-  function showWorkspace() {
+  function showDashboard() {
     document.getElementById('auth-screen').style.display = 'none';
     document.getElementById('admin-workspace').style.display = 'block';
-    updateQr();
+    loadCertificatesData();
   }
 
   function logoutAdmin() {
@@ -732,152 +925,361 @@
     location.reload();
   }
 
-  function updateQr() {
-    const id = document.getElementById('inp-id').value.trim().toUpperCase() || 'SIBS-2026-0001';
-    const nama = document.getElementById('inp-nama').value.trim() || 'Nama Santri';
-    const qrColor = document.getElementById('qr-color-select') ? document.getElementById('qr-color-select').value : '#123d2f';
+  // ================= LOAD DATA GOOGLE SHEETS =================
+  async function loadCertificatesData() {
+    const syncBtn = document.getElementById('btn-sync');
+    if (syncBtn) syncBtn.innerHTML = '⏳ Menghubungkan...';
 
-    // Update DOM View Stiker
-    document.getElementById('view-sticker-id').textContent = id;
-    document.getElementById('view-sticker-nama').textContent = nama;
-
-    // Full Verification URL
-    const targetUrl = window.location.origin + '/verify/' + encodeURIComponent(id);
-    document.getElementById('btn-live-test').href = targetUrl;
-
-    // Generate QR Code di Box
-    const qrContainer = document.getElementById('qrcode-box');
-    qrContainer.innerHTML = '';
-
-    qrInstance = new QRCode(qrContainer, {
-      text: targetUrl,
-      width: 128,
-      height: 128,
-      colorDark: qrColor,
-      colorLight: "#ffffff",
-      correctLevel: QRCode.CorrectLevel.H
-    });
-  }
-
-  // Bind input listeners
-  const inputs = ['inp-id', 'inp-nama', 'inp-lomba', 'inp-predikat', 'inp-tanggal'];
-  inputs.forEach(id => {
-    document.getElementById(id).addEventListener('input', updateQr);
-  });
-
-  // Increment ID (e.g. SIBS-2026-0001 -> SIBS-2026-0002)
-  function incrementId() {
-    const inp = document.getElementById('inp-id');
-    const val = inp.value.trim();
-    const match = val.match(/^(.*?)(\d+)$/);
-    if (match) {
-      const prefix = match[1];
-      const numStr = match[2];
-      const nextNum = parseInt(numStr, 10) + 1;
-      inp.value = prefix + String(nextNum).padStart(numStr.length, '0');
-    } else {
-      inp.value = 'SIBS-2026-0002';
+    const savedSheetId = localStorage.getItem('sibs_sheet_id') || '';
+    let apiUrl = '/api/verify?action=list';
+    if (savedSheetId) {
+      apiUrl += '&sheet_id=' + encodeURIComponent(savedSheetId);
     }
-    updateQr();
+
+    try {
+      const res = await fetch(apiUrl);
+      const json = await res.json();
+
+      if (json.success && Array.isArray(json.records)) {
+        CERTIFICATES_DATA = json.records;
+        FILTERED_DATA = [...CERTIFICATES_DATA];
+        
+        // Update Stats
+        document.getElementById('stat-total').textContent = CERTIFICATES_DATA.length;
+        const activeCount = CERTIFICATES_DATA.filter(r => (r.status || 'AKTIF').toUpperCase() === 'AKTIF').length;
+        document.getElementById('stat-active').textContent = activeCount;
+        document.getElementById('stat-source').textContent = json.source === 'google_sheets' ? 'Google Sheets (Live)' : 'Database SIBS';
+        
+        const now = new Date();
+        document.getElementById('stat-last-sync').textContent = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0') + ' WIB';
+
+        renderTable();
+      } else {
+        throw new Error(json.message || 'Gagal memuat data');
+      }
+    } catch (err) {
+      console.error('Error fetching data:', err);
+      // Fallback pesan jika offline atau kendala
+      document.getElementById('student-table-body').innerHTML = `
+        <tr>
+          <td colspan="8" style="text-align: center; padding: 30px; color: #dc2626;">
+            ❌ Gagal menyinkronkan data: ${err.message}<br>
+            <button class="btn-tool sync" style="margin-top: 10px;" onclick="loadCertificatesData()">Coba Lagi</button>
+          </td>
+        </tr>
+      `;
+    } finally {
+      if (syncBtn) syncBtn.innerHTML = '🔄 Sinkronkan Google Sheets';
+    }
   }
 
-  // Reset Form untuk santri berikutnya
-  function resetForm() {
-    incrementId();
-    document.getElementById('inp-nama').value = '';
-    document.getElementById('inp-nama').focus();
-    updateQr();
-  }
-
-  // Download Stiker Kotak Lengkap (dengan logo & nama)
-  function downloadStickerImage() {
-    const badgeEl = document.getElementById('qr-sticker-badge');
-    const id = document.getElementById('inp-id').value.trim() || 'SIBS';
-    
-    html2canvas(badgeEl, {
-      scale: 3, // High-Resolution 3x
-      useCORS: true,
-      backgroundColor: '#ffffff'
-    }).then(canvas => {
-      const link = document.createElement('a');
-      link.download = 'Stiker-QR-' + id + '.png';
-      link.href = canvas.toDataURL('image/png');
-      link.click();
-    });
-  }
-
-  // Download QR Code Murni (Hanya QR Code High-Res untuk disisipkan ke Canva/Corel)
-  function downloadPureQr() {
-    const qrImg = document.querySelector('#qrcode-box img');
-    const id = document.getElementById('inp-id').value.trim() || 'SIBS';
-    const isTransparent = document.getElementById('qr-bg-select').value === 'transparent';
-    const qrColor = document.getElementById('qr-color-select').value;
-
-    if (!qrImg || !qrImg.src) {
-      alert('QR Code sedang disiapkan, silakan coba 1 detik lagi.');
+  // ================= RENDER TABLE =================
+  function renderTable() {
+    const tbody = document.getElementById('student-table-body');
+    if (FILTERED_DATA.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="8" style="text-align: center; padding: 40px; color: var(--slate-500);">
+            Tidak ada data santri yang cocok dengan pencarian.
+          </td>
+        </tr>
+      `;
       return;
     }
 
-    // Gambar ulang di canvas ukuran besar (800x800 px)
-    const canvas = document.createElement('canvas');
-    canvas.width = 800;
-    canvas.height = 800;
-    const ctx = canvas.getContext('2d');
-    
-    if (!isTransparent) {
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, 800, 800);
-    } else {
-      ctx.clearRect(0, 0, 800, 800);
-    }
+    tbody.innerHTML = '';
 
-    const img = new Image();
-    img.onload = () => {
-      if (!isTransparent) {
-        ctx.drawImage(img, 40, 40, 720, 720);
-      } else {
-        // Untuk transparan, render pixel putih menjadi transparan
-        const tempCanvas = document.createElement('canvas');
-        tempCanvas.width = 800;
-        tempCanvas.height = 800;
-        const tempCtx = tempCanvas.getContext('2d');
-        tempCtx.drawImage(img, 40, 40, 720, 720);
-        
-        const imgData = tempCtx.getImageData(0, 0, 800, 800);
-        const data = imgData.data;
-        for (let i = 0; i < data.length; i += 4) {
-          // Jika pixel terang/putih, jadikan transparan
-          if (data[i] > 200 && data[i + 1] > 200 && data[i + 2] > 200) {
-            data[i + 3] = 0;
-          }
+    FILTERED_DATA.forEach((item, index) => {
+      const tr = document.createElement('tr');
+      const verifyUrl = window.location.origin + '/verify/' + encodeURIComponent(item.id);
+      const isAktif = (item.status || 'AKTIF').toUpperCase() === 'AKTIF';
+
+      tr.innerHTML = `
+        <td style="color: var(--slate-500); font-weight: 600;">${index + 1}</td>
+        <td><span class="id-badge">${escapeHtml(item.id)}</span></td>
+        <td>
+          <span class="student-name">${escapeHtml(item.nama)}</span>
+          <span style="font-size: 11px; color: var(--slate-500);">${isAktif ? '● Terdaftar Sah' : 'Dicabut'}</span>
+        </td>
+        <td style="color: var(--slate-700); font-weight: 500;">${escapeHtml(item.lomba)}</td>
+        <td><span class="badge-predikat">${escapeHtml(item.predikat || 'Peserta')}</span></td>
+        <td style="color: var(--slate-600); font-size: 12px;">${escapeHtml(item.tanggal)}</td>
+        <td style="text-align: center;">
+          <div class="qr-mini-thumb" id="mini-qr-${index}" title="Klik untuk Pratinjau & Unduh" onclick="downloadSinglePureQr('${item.id}', '${escapeJs(item.nama)}')"></div>
+        </td>
+        <td>
+          <div class="row-actions">
+            <button type="button" class="btn-action-qr green" onclick="downloadSinglePureQr('${item.id}', '${escapeJs(item.nama)}')">
+              ⬇️ QR Saja
+            </button>
+            <button type="button" class="btn-action-qr gold" onclick="downloadSingleSticker('${item.id}', '${escapeJs(item.nama)}')">
+              🏷️ Stiker
+            </button>
+            <a href="${verifyUrl}" target="_blank" class="btn-action-qr" title="Lihat Tampilan Scan Santri">
+              👁️ Cek Web
+            </a>
+          </div>
+        </td>
+      `;
+      tbody.appendChild(tr);
+
+      // Generate Mini QR Code in background
+      setTimeout(() => {
+        const miniContainer = document.getElementById(`mini-qr-${index}`);
+        if (miniContainer) {
+          miniContainer.innerHTML = '';
+          new QRCode(miniContainer, {
+            text: verifyUrl,
+            width: 44,
+            height: 44,
+            colorDark: "#123d2f",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.M
+          });
         }
-        ctx.putImageData(imgData, 0, 0);
-      }
-
-      const link = document.createElement('a');
-      link.download = 'QR-' + id + '.png';
-      link.href = canvas.toDataURL('image/png');
-      link.click();
-    };
-    img.src = qrImg.src;
+      }, 10 * index);
+    });
   }
 
-  // Salin Baris Google Sheets
-  function copySheetsRow() {
-    const id = document.getElementById('inp-id').value.trim().toUpperCase();
-    const nama = document.getElementById('inp-nama').value.trim();
-    const lomba = document.getElementById('inp-lomba').value.trim();
-    const predikat = document.getElementById('inp-predikat').value.trim();
-    const tanggal = document.getElementById('inp-tanggal').value.trim();
-    const status = 'AKTIF';
+  // ================= FILTER TABLE =================
+  function filterTable() {
+    const query = document.getElementById('search-filter').value.toLowerCase().trim();
+    if (!query) {
+      FILTERED_DATA = [...CERTIFICATES_DATA];
+    } else {
+      FILTERED_DATA = CERTIFICATES_DATA.filter(item => 
+        (item.id && item.id.toLowerCase().includes(query)) ||
+        (item.nama && item.nama.toLowerCase().includes(query)) ||
+        (item.lomba && item.lomba.toLowerCase().includes(query)) ||
+        (item.predikat && item.predikat.toLowerCase().includes(query))
+      );
+    }
+    renderTable();
+  }
 
-    const rowTsv = `${id}\t${nama}\t${lomba}\t${predikat}\t${tanggal}\t${status}`;
+  // ================= DOWNLOAD SINGLE PURE QR CODE (HIGH-RES PNG) =================
+  function downloadSinglePureQr(id, nama) {
+    const verifyUrl = window.location.origin + '/verify/' + encodeURIComponent(id);
+    const sandbox = document.getElementById('qr-sandbox');
+    sandbox.innerHTML = '';
 
-    navigator.clipboard.writeText(rowTsv).then(() => {
-      alert('✅ Data Baris Santri Berhasil Disalin!\nBuka Google Sheets Anda dan tekan Ctrl + V pada baris baru:\n\n' + rowTsv.replace(/\t/g, ' | '));
-    }).catch(err => {
-      prompt('Salin data baris ini:', rowTsv);
+    // Render High-Res QR di Sandbox (800x800)
+    new QRCode(sandbox, {
+      text: verifyUrl,
+      width: 800,
+      height: 800,
+      colorDark: "#123d2f",
+      colorLight: "#ffffff",
+      correctLevel: QRCode.CorrectLevel.H
     });
+
+    setTimeout(() => {
+      const qrImg = sandbox.querySelector('img');
+      if (qrImg && qrImg.src) {
+        const cleanName = (nama || 'Santri').replace(/[^a-zA-Z0-9\s]/g, '').trim().replace(/\s+/g, '-');
+        const filename = `QR-${id}-${cleanName}.png`;
+        
+        const link = document.createElement('a');
+        link.download = filename;
+        link.href = qrImg.src;
+        link.click();
+      }
+    }, 150);
+  }
+
+  // ================= DOWNLOAD SINGLE STIKER TEMPEL (PNG) =================
+  function downloadSingleSticker(id, nama) {
+    const verifyUrl = window.location.origin + '/verify/' + encodeURIComponent(id);
+    
+    // Set data ke hidden sticker element
+    document.getElementById('stk-id-txt').textContent = id;
+    document.getElementById('stk-nama-txt').textContent = nama;
+    const qrSlot = document.getElementById('stk-qr-box');
+    qrSlot.innerHTML = '';
+
+    new QRCode(qrSlot, {
+      text: verifyUrl,
+      width: 130,
+      height: 130,
+      colorDark: "#123d2f",
+      colorLight: "#ffffff",
+      correctLevel: QRCode.CorrectLevel.H
+    });
+
+    setTimeout(() => {
+      const badgeEl = document.getElementById('sticker-render-box');
+      html2canvas(badgeEl, {
+        scale: 3, // High Resolution 3x
+        useCORS: true,
+        backgroundColor: '#ffffff'
+      }).then(canvas => {
+        const cleanName = (nama || 'Santri').replace(/[^a-zA-Z0-9\s]/g, '').trim().replace(/\s+/g, '-');
+        const link = document.createElement('a');
+        link.download = `Stiker-Tempel-${id}-${cleanName}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      });
+    }, 200);
+  }
+
+  // ================= BATCH DOWNLOAD SEMUA QR (FILE ZIP) =================
+  async function downloadAllQrZip() {
+    if (CERTIFICATES_DATA.length === 0) {
+      alert('Belum ada data santri untuk diunduh.');
+      return;
+    }
+
+    const confirmDownload = confirm(`Apakah Anda ingin mengunduh seluruh ${CERTIFICATES_DATA.length} QR Code santri sekaligus dalam 1 file ZIP?`);
+    if (!confirmDownload) return;
+
+    const zip = new JSZip();
+    const folder = zip.folder("QR_Sertifikat_SIBS");
+    const sandbox = document.getElementById('qr-sandbox');
+
+    const btnBatch = document.querySelector('.btn-tool.batch');
+    const originalText = btnBatch.innerHTML;
+    btnBatch.innerHTML = '⏳ Menyiapkan ZIP (0%)...';
+
+    for (let i = 0; i < CERTIFICATES_DATA.length; i++) {
+      const item = CERTIFICATES_DATA[i];
+      const verifyUrl = window.location.origin + '/verify/' + encodeURIComponent(item.id);
+      
+      sandbox.innerHTML = '';
+      new QRCode(sandbox, {
+        text: verifyUrl,
+        width: 800,
+        height: 800,
+        colorDark: "#123d2f",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H
+      });
+
+      // Tunggu render QR
+      await new Promise(resolve => setTimeout(resolve, 80));
+
+      const qrImg = sandbox.querySelector('img');
+      if (qrImg && qrImg.src) {
+        // Ambil data base64 png
+        const base64Data = qrImg.src.split(',')[1];
+        const cleanName = (item.nama || 'Santri').replace(/[^a-zA-Z0-9\s]/g, '').trim();
+        const filename = `${item.id} - ${cleanName}.png`;
+        folder.file(filename, base64Data, { base64: true });
+      }
+
+      const percent = Math.round(((i + 1) / CERTIFICATES_DATA.length) * 100);
+      btnBatch.innerHTML = `⏳ Menyiapkan ZIP (${percent}%)...`;
+    }
+
+    btnBatch.innerHTML = '📦 Mengompresi File ZIP...';
+    
+    zip.generateAsync({ type: "blob" }).then(content => {
+      saveAs(content, `Semua_QR_Sertifikat_SIBS_${new Date().toISOString().slice(0, 10)}.zip`);
+      btnBatch.innerHTML = originalText;
+    }).catch(err => {
+      alert('Gagal membuat file ZIP: ' + err.message);
+      btnBatch.innerHTML = originalText;
+    });
+  }
+
+  // ================= CETAK LEMBAR STIKER A4 (PRINT SHEET) =================
+  function openPrintPreview() {
+    const gridContainer = document.getElementById('a4-grid-container');
+    gridContainer.innerHTML = '';
+
+    CERTIFICATES_DATA.forEach((item, idx) => {
+      const verifyUrl = window.location.origin + '/verify/' + encodeURIComponent(item.id);
+      const div = document.createElement('div');
+      div.className = 'print-sticker-item';
+      div.innerHTML = `
+        <div style="font-size: 8px; font-weight: 800; color: #123d2f; margin-bottom: 4px;">SYARIF INTERNASIONAL BOARDING SCHOOL</div>
+        <div id="print-qr-slot-${idx}" style="width: 100px; height: 100px; margin: 0 auto 6px auto;"></div>
+        <div style="font-family: monospace; font-size: 10px; font-weight: 700; color: #123d2f;">${escapeHtml(item.id)}</div>
+        <div style="font-size: 11px; font-weight: 800; color: #000; margin-top: 2px;">${escapeHtml(item.nama)}</div>
+        <div style="font-size: 7.5px; color: #64748b; margin-top: 2px;">PINDAI UNTUK VERIFIKASI KEASLIAN</div>
+      `;
+      gridContainer.appendChild(div);
+
+      setTimeout(() => {
+        const slot = document.getElementById(`print-qr-slot-${idx}`);
+        if (slot) {
+          new QRCode(slot, {
+            text: verifyUrl,
+            width: 100,
+            height: 100,
+            colorDark: "#123d2f",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.M
+          });
+        }
+      }, 20 * idx);
+    });
+
+    setTimeout(() => {
+      window.print();
+    }, 500);
+  }
+
+  // ================= MODAL SETTINGS =================
+  function openSettingsModal() {
+    document.getElementById('input-sheet-id').value = localStorage.getItem('sibs_sheet_id') || '';
+    document.getElementById('modal-settings').style.display = 'flex';
+  }
+  function closeSettingsModal() {
+    document.getElementById('modal-settings').style.display = 'none';
+  }
+  function saveSheetSettings() {
+    let raw = document.getElementById('input-sheet-id').value.trim();
+    // Parse if user pasted a full URL
+    const match = raw.match(/\/d\/([a-zA-Z0-9-_]+)/);
+    const sheetId = match ? match[1] : raw;
+    localStorage.setItem('sibs_sheet_id', sheetId);
+    closeSettingsModal();
+    loadCertificatesData();
+  }
+
+  // ================= MODAL MANUAL INPUT =================
+  function openManualAddModal() {
+    // Generate next ID
+    const nextNum = CERTIFICATES_DATA.length + 1;
+    document.getElementById('m-id').value = 'SIBS-2026-' + String(nextNum).padStart(4, '0');
+    document.getElementById('m-nama').value = '';
+    document.getElementById('modal-manual-add').style.display = 'flex';
+    document.getElementById('m-nama').focus();
+  }
+  function closeManualAddModal() {
+    document.getElementById('modal-manual-add').style.display = 'none';
+  }
+  function submitManualRecord() {
+    const id = document.getElementById('m-id').value.trim().toUpperCase();
+    const nama = document.getElementById('m-nama').value.trim();
+    if (!id || !nama) {
+      alert('Nomor Sertifikat dan Nama Santri wajib diisi.');
+      return;
+    }
+    downloadSinglePureQr(id, nama);
+    closeManualAddModal();
+  }
+  function copyManualRow() {
+    const id = document.getElementById('m-id').value.trim().toUpperCase();
+    const nama = document.getElementById('m-nama').value.trim();
+    const lomba = document.getElementById('m-lomba').value.trim();
+    const predikat = document.getElementById('m-predikat').value.trim();
+    const tanggal = document.getElementById('m-tanggal').value.trim();
+    const row = `${id}\t${nama}\t${lomba}\t${predikat}\t${tanggal}\tAKTIF`;
+    
+    navigator.clipboard.writeText(row).then(() => {
+      alert('✅ Baris berhasil disalin!\nSilakan buka Google Sheets Anda dan tekan Ctrl + V pada baris baru.');
+    }).catch(() => prompt('Salin baris ini:', row));
+  }
+
+  // ================= UTILS =================
+  function escapeHtml(text) {
+    if (!text) return '';
+    return String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+  function escapeJs(text) {
+    if (!text) return '';
+    return String(text).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
   }
 </script>
 </body>

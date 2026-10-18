@@ -4,7 +4,7 @@ const https = require('https');
 
 // Profil Baku Yayasan
 const PROFIL_YAYASAN = {
-  namaYayasan: 'Syarief Internasional Boarding School',
+  namaYayasan: 'Syarif Internasional Boarding School',
   lembaga: 'Lembaga Pendidikan Al-Quran Syarief Institute Bondowoso',
   alamat: 'Dusun Bunduh RT 09 RW 03, Desa Bataan, Kec. Tenggarang, Kab. Bondowoso',
   penandatangan: 'Anggit Hadi Prasaja, M.Pd',
@@ -66,6 +66,53 @@ function parseCsv(csvText) {
 }
 
 /**
+ * Ambil seluruh records dari Google Sheets atau Fallback Lokal
+ */
+async function loadAllRecords(customSpreadsheetId) {
+  let records = [];
+  const spreadsheetId = customSpreadsheetId || process.env.SPREADSHEET_ID;
+  const sheetName = process.env.SHEET_NAME || 'Sertifikat';
+
+  // 1. Coba dari Google Sheets CSV
+  if (spreadsheetId) {
+    try {
+      const csvUrl = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
+      const csvRes = await fetchHttps(csvUrl, 4000);
+
+      if (csvRes.status === 200 && csvRes.data) {
+        const parsed = parseCsv(csvRes.data);
+        // Lewati baris header pertama
+        records = parsed.slice(1).map(row => ({
+          id: String(row[0] || '').trim(),
+          nama: String(row[1] || '').trim(),
+          lomba: String(row[2] || '').trim(),
+          predikat: String(row[3] || 'Peserta').trim(),
+          tanggal: String(row[4] || '').trim(),
+          status: String(row[5] || 'AKTIF').trim().toUpperCase()
+        })).filter(item => item.id && item.nama);
+      }
+    } catch (err) {
+      console.warn('Gagal membaca Google Sheets via CSV:', err.message);
+    }
+  }
+
+  // 2. Fallback ke file JSON lokal jika Google Sheets kosong / belum diset
+  if (records.length === 0) {
+    try {
+      records = require('../data/certificates.json');
+    } catch (e) {
+      try {
+        records = require('./data/certificates.json');
+      } catch (e2) {
+        records = [];
+      }
+    }
+  }
+
+  return { records, source: spreadsheetId ? 'google_sheets' : 'local_database' };
+}
+
+/**
  * Main Vercel Serverless Function Handler
  */
 module.exports = async (req, res) => {
@@ -79,9 +126,23 @@ module.exports = async (req, res) => {
   }
 
   try {
+    const action = (req.query.action || '').trim().toLowerCase();
     const rawId = req.query.id || '';
     const id = String(rawId).trim().toUpperCase();
 
+    // AKSI 1: Ambil seluruh daftar santri untuk Admin Panel
+    if (action === 'list' || (!id && action !== 'verify')) {
+      const { records, source } = await loadAllRecords(req.query.sheet_id);
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      return res.status(200).json({
+        success: true,
+        source: source,
+        total: records.length,
+        records: records
+      });
+    }
+
+    // AKSI 2: Verifikasi nomor sertifikat tunggal
     if (!id) {
       return res.status(400).json({
         success: false,
@@ -90,67 +151,13 @@ module.exports = async (req, res) => {
       });
     }
 
-    let records = [];
-
-    // OPSI 1: Sambungan langsung ke Google Sheets CSV (jika SPREADSHEET_ID diset di Vercel Environment Variables)
-    const spreadsheetId = process.env.SPREADSHEET_ID;
-    const sheetName = process.env.SHEET_NAME || 'Sertifikat';
-
-    if (spreadsheetId) {
-      try {
-        const csvUrl = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
-        const csvRes = await fetchHttps(csvUrl);
-
-        if (csvRes.status === 200 && csvRes.data) {
-          const parsed = parseCsv(csvRes.data);
-          // Lewati baris header pertama
-          records = parsed.slice(1).map(row => ({
-            id: String(row[0] || '').trim(),
-            nama: String(row[1] || '').trim(),
-            lomba: String(row[2] || '').trim(),
-            predikat: String(row[3] || 'Peserta').trim(),
-            tanggal: String(row[4] || '').trim(),
-            status: String(row[5] || 'AKTIF').trim().toUpperCase()
-          }));
-        }
-      } catch (err) {
-        console.warn('Gagal membaca Google Sheets via CSV, menggunakan fallback:', err.message);
-      }
-    }
-
-    // OPSI 2: Sambungan via Apps Script API (jika GAS_API_URL diset)
-    if (records.length === 0 && process.env.GAS_API_URL) {
-      try {
-        const gasUrl = `${process.env.GAS_API_URL}${process.env.GAS_API_URL.includes('?') ? '&' : '?'}action=api&id=${encodeURIComponent(id)}`;
-        const gasRes = await fetchHttps(gasUrl);
-        if (gasRes.status === 200 && gasRes.data) {
-          const gasJson = JSON.parse(gasRes.data);
-          res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=120');
-          return res.status(200).json(gasJson);
-        }
-      } catch (err) {
-        console.warn('Gagal membaca dari GAS API:', err.message);
-      }
-    }
-
-    // OPSI 3: Fallback ke database JSON lokal (data/certificates.json)
-    if (records.length === 0) {
-      try {
-        records = require('../data/certificates.json');
-      } catch (e) {
-        try {
-          records = require('./data/certificates.json');
-        } catch (e2) {
-          records = [];
-        }
-      }
-    }
+    const { records } = await loadAllRecords(req.query.sheet_id);
 
     // Cari ID sertifikat (case-insensitive)
     const match = records.find(item => String(item.id).trim().toUpperCase() === id);
 
-    // Cache di CDN Vercel selama 60 detik
-    res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=180');
+    // Cache di CDN Vercel selama 60 detik untuk kecepatan
+    res.setHeader('Cache-Control', 's-maxage=30, stale-while-revalidate=120');
 
     if (!match) {
       return res.status(200).json({
