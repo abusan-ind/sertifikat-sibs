@@ -661,14 +661,58 @@
           </div>
         `;
 
-        new QRCode(document.getElementById('qr-thumb'), {
+        const qrThumb = document.getElementById('qr-thumb');
+        qrThumb.innerHTML = '';
+        const tempQrDiv = document.createElement('div');
+        tempQrDiv.style.position = 'absolute';
+        tempQrDiv.style.left = '-9999px';
+        document.body.appendChild(tempQrDiv);
+
+        new QRCode(tempQrDiv, {
           text: verifyUrl,
-          width: 52,
-          height: 52,
-          colorDark: "#064e3b",
+          width: 140,
+          height: 140,
+          colorDark: "#123d2f",
           colorLight: "#ffffff",
-          correctLevel: QRCode.CorrectLevel.M
+          correctLevel: QRCode.CorrectLevel.H
         });
+
+        setTimeout(() => {
+          const qrCanvas = tempQrDiv.querySelector('canvas') || tempQrDiv.querySelector('img');
+          if (qrCanvas) {
+            const finalCanvas = document.createElement('canvas');
+            finalCanvas.width = 140;
+            finalCanvas.height = 140;
+            finalCanvas.style.width = '52px';
+            finalCanvas.style.height = '52px';
+            finalCanvas.style.display = 'block';
+            finalCanvas.style.borderRadius = '4px';
+            const ctx = finalCanvas.getContext('2d');
+            ctx.drawImage(qrCanvas, 0, 0, 140, 140);
+
+            // Draw center logo badge
+            const logoImg = new Image();
+            logoImg.crossOrigin = 'anonymous';
+            logoImg.onload = () => {
+              const bSize = 38;
+              const bx = (140 - bSize) / 2;
+              const by = (140 - bSize) / 2;
+              ctx.save();
+              ctx.fillStyle = '#ffffff';
+              ctx.shadowColor = 'rgba(0,0,0,0.3)';
+              ctx.shadowBlur = 4;
+              ctx.fillRect(bx, by, bSize, bSize);
+              ctx.strokeStyle = '#123d2f';
+              ctx.lineWidth = 1.5;
+              ctx.strokeRect(bx, by, bSize, bSize);
+              ctx.restore();
+              ctx.drawImage(logoImg, bx + 3, by + 3, bSize - 6, bSize - 6);
+            };
+            logoImg.src = '/logo-sibs.png';
+            qrThumb.appendChild(finalCanvas);
+          }
+          if (document.body.contains(tempQrDiv)) document.body.removeChild(tempQrDiv);
+        }, 80);
       }
 
       function renderError(queryId) {

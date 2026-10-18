@@ -183,14 +183,6 @@
       background: var(--slate-100);
       border-color: #cbd5e1;
     }
-    .btn-nav-act.primary {
-      background: var(--primary);
-      color: white;
-      border-color: var(--primary);
-    }
-    .btn-nav-act.primary:hover {
-      background: var(--primary-hover);
-    }
 
     /* Main Container */
     .app-main {
@@ -264,13 +256,15 @@
     .toolbar-left {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 14px;
       flex: 1;
-      max-width: 480px;
+      max-width: 580px;
+      flex-wrap: wrap;
     }
     .search-input-box {
       position: relative;
-      width: 100%;
+      flex: 1;
+      min-width: 260px;
     }
     .search-input-box input {
       width: 100%;
@@ -293,6 +287,26 @@
       font-size: 14px;
       color: var(--slate-400);
       pointer-events: none;
+    }
+    .logo-toggle-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--primary);
+      background: #ecfdf5;
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid #a7f3d0;
+      cursor: pointer;
+      user-select: none;
+    }
+    .logo-toggle-wrap input {
+      cursor: pointer;
+      width: 16px;
+      height: 16px;
+      accent-color: var(--primary);
     }
     .toolbar-actions {
       display: flex;
@@ -399,44 +413,32 @@
       display: inline-block;
       white-space: nowrap;
     }
-    .status-dot {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      font-size: 11.5px;
-      font-weight: 700;
-      color: #15803d;
-    }
-    .dot {
-      width: 7px;
-      height: 7px;
-      background: #10b981;
-      border-radius: 50%;
-    }
 
-    /* Mini QR Box in Table */
+    /* Mini QR Box in Table (Dengan Logo di Tengah) */
     .qr-mini-thumb {
-      width: 52px;
-      height: 52px;
+      width: 58px;
+      height: 58px;
       background: #ffffff;
-      padding: 3px;
-      border-radius: 6px;
+      padding: 2px;
+      border-radius: 8px;
       border: 1px solid var(--slate-200);
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-      transition: transform 0.2s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      transition: all 0.2s;
     }
     .qr-mini-thumb:hover {
-      transform: scale(1.1);
+      transform: scale(1.12);
       border-color: var(--primary);
+      box-shadow: 0 4px 12px rgba(18, 61, 47, 0.15);
     }
-    .qr-mini-thumb img {
-      width: 44px !important;
-      height: 44px !important;
+    .qr-mini-thumb canvas, .qr-mini-thumb img {
+      width: 52px !important;
+      height: 52px !important;
       display: block;
+      border-radius: 4px;
     }
 
     /* Row Action Buttons */
@@ -447,7 +449,7 @@
       white-space: nowrap;
     }
     .btn-action-qr {
-      padding: 6px 10px;
+      padding: 7px 11px;
       border-radius: 8px;
       font-size: 11.5px;
       font-weight: 700;
@@ -457,7 +459,7 @@
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 4px;
+      gap: 5px;
       transition: all 0.15s;
       text-decoration: none;
     }
@@ -482,17 +484,17 @@
       background: #fde68a;
     }
 
-    /* Hidden Sandbox for off-screen QR generation & high-res canvas */
+    /* Hidden Sandbox for off-screen QR generation */
     #qr-sandbox {
       position: absolute;
       left: -9999px;
       top: -9999px;
-      width: 400px;
-      height: 400px;
+      width: 900px;
+      height: 900px;
       visibility: hidden;
     }
 
-    /* Off-screen Sticker Canvas Template */
+    /* Off-screen Sticker Element untuk HTML2Canvas Export */
     #sticker-render-box {
       position: absolute;
       left: -9999px;
@@ -527,7 +529,7 @@
       width: 140px;
       height: 140px;
       background: white;
-      padding: 4px;
+      padding: 2px;
       border-radius: 8px;
       border: 1px solid #e2e8f0;
       display: flex;
@@ -535,9 +537,9 @@
       justify-content: center;
       margin-bottom: 8px;
     }
-    .sticker-qr-slot img {
-      width: 130px !important;
-      height: 130px !important;
+    .sticker-qr-slot canvas, .sticker-qr-slot img {
+      width: 134px !important;
+      height: 134px !important;
       display: block;
     }
     .sticker-id-pill {
@@ -731,7 +733,7 @@
       </div>
     </div>
 
-    <!-- Toolbar: Search & Action Buttons -->
+    <!-- Toolbar: Search, Logo Toggle & Action Buttons -->
     <div class="toolbar-card">
       <div class="toolbar-left">
         <div class="search-input-box">
@@ -743,6 +745,10 @@
             oninput="filterTable()" 
           />
         </div>
+        <label class="logo-toggle-wrap" title="Sertakan logo yayasan SIBS di bagian tengah QR Code">
+          <input type="checkbox" id="toggle-center-logo" checked onchange="onLogoToggleChange()" />
+          <span>✨ Logo di Tengah QR</span>
+        </label>
       </div>
       <div class="toolbar-actions">
         <button type="button" class="btn-tool sync" id="btn-sync" onclick="loadCertificatesData()">
@@ -772,7 +778,7 @@
               <th>Kegiatan / Lomba</th>
               <th style="width: 130px;">Predikat</th>
               <th style="width: 120px;">Tanggal</th>
-              <th style="width: 80px; text-align: center;">Mini QR</th>
+              <th style="width: 85px; text-align: center;">Mini QR (Logo)</th>
               <th style="width: 240px; text-align: center;">Aksi Download QR</th>
             </tr>
           </thead>
@@ -887,6 +893,13 @@
   let CERTIFICATES_DATA = [];
   let FILTERED_DATA = [];
 
+  // Pre-load Logo Yayasan Resmi untuk dipasang di tengah QR
+  const LOGO_IMG = new Image();
+  LOGO_IMG.crossOrigin = 'anonymous';
+  LOGO_IMG.src = '/logo-sibs.png';
+  let isLogoLoaded = false;
+  LOGO_IMG.onload = () => { isLogoLoaded = true; };
+
   // ================= AUTH MANAGEMENT =================
   window.addEventListener('DOMContentLoaded', () => {
     if (sessionStorage.getItem('sibs_admin_auth') === 'true') {
@@ -925,6 +938,10 @@
     location.reload();
   }
 
+  function onLogoToggleChange() {
+    renderTable();
+  }
+
   // ================= LOAD DATA GOOGLE SHEETS =================
   async function loadCertificatesData() {
     const syncBtn = document.getElementById('btn-sync');
@@ -959,7 +976,6 @@
       }
     } catch (err) {
       console.error('Error fetching data:', err);
-      // Fallback pesan jika offline atau kendala
       document.getElementById('student-table-body').innerHTML = `
         <tr>
           <td colspan="8" style="text-align: center; padding: 30px; color: #dc2626;">
@@ -973,9 +989,111 @@
     }
   }
 
+  // ================= CORE FUNCTION: GENERATE QR DENGAN LOGO DI TENGAH =================
+  /**
+   * Menggambar QR Code pada Canvas dengan Logo Yayasan di Tengahnya
+   * Menggunakan Error Correction Level H (30%) sehingga 100% aman dan cepat di-scan.
+   */
+  function generateQrCanvasWithLogo(textUrl, size = 800, withLogo = true, qrColor = '#123d2f') {
+    return new Promise((resolve) => {
+      const tempDiv = document.createElement('div');
+      tempDiv.style.width = size + 'px';
+      tempDiv.style.height = size + 'px';
+      tempDiv.style.position = 'absolute';
+      tempDiv.style.left = '-9999px';
+      document.body.appendChild(tempDiv);
+
+      new QRCode(tempDiv, {
+        text: textUrl,
+        width: size,
+        height: size,
+        colorDark: qrColor,
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H
+      });
+
+      // Tunggu hingga QRCode selesai dirender ke DOM
+      const checkInterval = setInterval(() => {
+        const qrCanvas = tempDiv.querySelector('canvas');
+        const qrImg = tempDiv.querySelector('img');
+        const sourceElement = qrCanvas || (qrImg && qrImg.naturalWidth > 0 ? qrImg : null);
+
+        if (sourceElement) {
+          clearInterval(checkInterval);
+
+          const finalCanvas = document.createElement('canvas');
+          finalCanvas.width = size;
+          finalCanvas.height = size;
+          const ctx = finalCanvas.getContext('2d');
+
+          // 1. Gambar Base QR Code
+          ctx.drawImage(sourceElement, 0, 0, size, size);
+
+          // 2. Gambar Badge Logo di Tengah (Jika diaktifkan)
+          if (withLogo && (isLogoLoaded || (LOGO_IMG && LOGO_IMG.naturalWidth > 0))) {
+            const badgeScale = 0.26; // 26% dari lebar QR
+            const badgeSize = Math.round(size * badgeScale);
+            const badgeX = Math.round((size - badgeSize) / 2);
+            const badgeY = Math.round((size - badgeSize) / 2);
+            const radius = Math.round(badgeSize * 0.22);
+
+            // Background badge putih dengan bayangan lembut
+            ctx.save();
+            ctx.beginPath();
+            drawRoundRect(ctx, badgeX, badgeY, badgeSize, badgeSize, radius);
+            ctx.fillStyle = '#ffffff';
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.25)';
+            ctx.shadowBlur = Math.round(size * 0.015);
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = Math.round(size * 0.005);
+            ctx.fill();
+            ctx.restore();
+
+            // Border badge warna hijau emerald SIBS
+            ctx.save();
+            ctx.beginPath();
+            drawRoundRect(ctx, badgeX, badgeY, badgeSize, badgeSize, radius);
+            ctx.lineWidth = Math.max(2, Math.round(size * 0.006));
+            ctx.strokeStyle = '#123d2f';
+            ctx.stroke();
+            ctx.restore();
+
+            // Gambar logo di dalam badge putih
+            const pad = Math.round(badgeSize * 0.10);
+            const logoW = badgeSize - pad * 2;
+            const logoH = badgeSize - pad * 2;
+            ctx.drawImage(LOGO_IMG, badgeX + pad, badgeY + pad, logoW, logoH);
+          }
+
+          document.body.removeChild(tempDiv);
+          resolve(finalCanvas);
+        }
+      }, 30);
+    });
+  }
+
+  // Helper gambar rounded rectangle di canvas
+  function drawRoundRect(ctx, x, y, width, height, radius) {
+    if (ctx.roundRect) {
+      ctx.roundRect(x, y, width, height, radius);
+      return;
+    }
+    ctx.moveTo(x + radius, y);
+    ctx.lineTo(x + width - radius, y);
+    ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+    ctx.lineTo(x + width, y + height - radius);
+    ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+    ctx.lineTo(x + radius, y + height);
+    ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+    ctx.lineTo(x, y + radius);
+    ctx.quadraticCurveTo(x, y, x + radius, y);
+  }
+
   // ================= RENDER TABLE =================
   function renderTable() {
     const tbody = document.getElementById('student-table-body');
+    const withLogo = document.getElementById('toggle-center-logo').checked;
+
     if (FILTERED_DATA.length === 0) {
       tbody.innerHTML = `
         <tr>
@@ -999,13 +1117,15 @@
         <td><span class="id-badge">${escapeHtml(item.id)}</span></td>
         <td>
           <span class="student-name">${escapeHtml(item.nama)}</span>
-          <span style="font-size: 11px; color: var(--slate-500);">${isAktif ? '● Terdaftar Sah' : 'Dicabut'}</span>
+          <span style="font-size: 11px; color: #15803d; font-weight: 600;">${isAktif ? '● Terdaftar Sah' : 'Dicabut'}</span>
         </td>
         <td style="color: var(--slate-700); font-weight: 500;">${escapeHtml(item.lomba)}</td>
         <td><span class="badge-predikat">${escapeHtml(item.predikat || 'Peserta')}</span></td>
         <td style="color: var(--slate-600); font-size: 12px;">${escapeHtml(item.tanggal)}</td>
         <td style="text-align: center;">
-          <div class="qr-mini-thumb" id="mini-qr-${index}" title="Klik untuk Pratinjau & Unduh" onclick="downloadSinglePureQr('${item.id}', '${escapeJs(item.nama)}')"></div>
+          <div class="qr-mini-thumb" id="mini-qr-${index}" title="Klik untuk Pratinjau & Unduh" onclick="downloadSinglePureQr('${item.id}', '${escapeJs(item.nama)}')">
+            <span style="font-size: 10px; color: var(--slate-400);">...</span>
+          </div>
         </td>
         <td>
           <div class="row-actions">
@@ -1023,21 +1143,14 @@
       `;
       tbody.appendChild(tr);
 
-      // Generate Mini QR Code in background
-      setTimeout(() => {
+      // Render Mini QR dengan Logo di Tengah
+      generateQrCanvasWithLogo(verifyUrl, 160, withLogo).then(canvas => {
         const miniContainer = document.getElementById(`mini-qr-${index}`);
         if (miniContainer) {
           miniContainer.innerHTML = '';
-          new QRCode(miniContainer, {
-            text: verifyUrl,
-            width: 44,
-            height: 44,
-            colorDark: "#123d2f",
-            colorLight: "#ffffff",
-            correctLevel: QRCode.CorrectLevel.M
-          });
+          miniContainer.appendChild(canvas);
         }
-      }, 10 * index);
+      });
     });
   }
 
@@ -1057,39 +1170,27 @@
     renderTable();
   }
 
-  // ================= DOWNLOAD SINGLE PURE QR CODE (HIGH-RES PNG) =================
-  function downloadSinglePureQr(id, nama) {
+  // ================= DOWNLOAD SINGLE PURE QR CODE (HIGH-RES DENGAN LOGO DI TENGAH) =================
+  async function downloadSinglePureQr(id, nama) {
     const verifyUrl = window.location.origin + '/verify/' + encodeURIComponent(id);
-    const sandbox = document.getElementById('qr-sandbox');
-    sandbox.innerHTML = '';
+    const withLogo = document.getElementById('toggle-center-logo').checked;
 
-    // Render High-Res QR di Sandbox (800x800)
-    new QRCode(sandbox, {
-      text: verifyUrl,
-      width: 800,
-      height: 800,
-      colorDark: "#123d2f",
-      colorLight: "#ffffff",
-      correctLevel: QRCode.CorrectLevel.H
-    });
+    // Render Canvas High-Res 800x800 dengan Logo di Tengah
+    const canvas = await generateQrCanvasWithLogo(verifyUrl, 800, withLogo);
 
-    setTimeout(() => {
-      const qrImg = sandbox.querySelector('img');
-      if (qrImg && qrImg.src) {
-        const cleanName = (nama || 'Santri').replace(/[^a-zA-Z0-9\s]/g, '').trim().replace(/\s+/g, '-');
-        const filename = `QR-${id}-${cleanName}.png`;
-        
-        const link = document.createElement('a');
-        link.download = filename;
-        link.href = qrImg.src;
-        link.click();
-      }
-    }, 150);
+    const cleanName = (nama || 'Santri').replace(/[^a-zA-Z0-9\s]/g, '').trim().replace(/\s+/g, '-');
+    const filename = `QR-${id}-${cleanName}.png`;
+    
+    const link = document.createElement('a');
+    link.download = filename;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
   }
 
   // ================= DOWNLOAD SINGLE STIKER TEMPEL (PNG) =================
-  function downloadSingleSticker(id, nama) {
+  async function downloadSingleSticker(id, nama) {
     const verifyUrl = window.location.origin + '/verify/' + encodeURIComponent(id);
+    const withLogo = document.getElementById('toggle-center-logo').checked;
     
     // Set data ke hidden sticker element
     document.getElementById('stk-id-txt').textContent = id;
@@ -1097,14 +1198,9 @@
     const qrSlot = document.getElementById('stk-qr-box');
     qrSlot.innerHTML = '';
 
-    new QRCode(qrSlot, {
-      text: verifyUrl,
-      width: 130,
-      height: 130,
-      colorDark: "#123d2f",
-      colorLight: "#ffffff",
-      correctLevel: QRCode.CorrectLevel.H
-    });
+    // Render QR dengan Logo di tengah untuk stiker
+    const qrCanvas = await generateQrCanvasWithLogo(verifyUrl, 400, withLogo);
+    qrSlot.appendChild(qrCanvas);
 
     setTimeout(() => {
       const badgeEl = document.getElementById('sticker-render-box');
@@ -1119,22 +1215,22 @@
         link.href = canvas.toDataURL('image/png');
         link.click();
       });
-    }, 200);
+    }, 150);
   }
 
-  // ================= BATCH DOWNLOAD SEMUA QR (FILE ZIP) =================
+  // ================= BATCH DOWNLOAD SEMUA QR (FILE ZIP DENGAN LOGO DI TENGAH) =================
   async function downloadAllQrZip() {
     if (CERTIFICATES_DATA.length === 0) {
       alert('Belum ada data santri untuk diunduh.');
       return;
     }
 
-    const confirmDownload = confirm(`Apakah Anda ingin mengunduh seluruh ${CERTIFICATES_DATA.length} QR Code santri sekaligus dalam 1 file ZIP?`);
+    const withLogo = document.getElementById('toggle-center-logo').checked;
+    const confirmDownload = confirm(`Apakah Anda ingin mengunduh seluruh ${CERTIFICATES_DATA.length} QR Code santri (lengkap dengan logo di tengah) dalam 1 file ZIP?`);
     if (!confirmDownload) return;
 
     const zip = new JSZip();
     const folder = zip.folder("QR_Sertifikat_SIBS");
-    const sandbox = document.getElementById('qr-sandbox');
 
     const btnBatch = document.querySelector('.btn-tool.batch');
     const originalText = btnBatch.innerHTML;
@@ -1144,27 +1240,13 @@
       const item = CERTIFICATES_DATA[i];
       const verifyUrl = window.location.origin + '/verify/' + encodeURIComponent(item.id);
       
-      sandbox.innerHTML = '';
-      new QRCode(sandbox, {
-        text: verifyUrl,
-        width: 800,
-        height: 800,
-        colorDark: "#123d2f",
-        colorLight: "#ffffff",
-        correctLevel: QRCode.CorrectLevel.H
-      });
-
-      // Tunggu render QR
-      await new Promise(resolve => setTimeout(resolve, 80));
-
-      const qrImg = sandbox.querySelector('img');
-      if (qrImg && qrImg.src) {
-        // Ambil data base64 png
-        const base64Data = qrImg.src.split(',')[1];
-        const cleanName = (item.nama || 'Santri').replace(/[^a-zA-Z0-9\s]/g, '').trim();
-        const filename = `${item.id} - ${cleanName}.png`;
-        folder.file(filename, base64Data, { base64: true });
-      }
+      const canvas = await generateQrCanvasWithLogo(verifyUrl, 800, withLogo);
+      const dataUrl = canvas.toDataURL('image/png');
+      const base64Data = dataUrl.split(',')[1];
+      
+      const cleanName = (item.nama || 'Santri').replace(/[^a-zA-Z0-9\s]/g, '').trim();
+      const filename = `${item.id} - ${cleanName}.png`;
+      folder.file(filename, base64Data, { base64: true });
 
       const percent = Math.round(((i + 1) / CERTIFICATES_DATA.length) * 100);
       btnBatch.innerHTML = `⏳ Menyiapkan ZIP (${percent}%)...`;
@@ -1173,7 +1255,7 @@
     btnBatch.innerHTML = '📦 Mengompresi File ZIP...';
     
     zip.generateAsync({ type: "blob" }).then(content => {
-      saveAs(content, `Semua_QR_Sertifikat_SIBS_${new Date().toISOString().slice(0, 10)}.zip`);
+      saveAs(content, `Semua_QR_Berlogo_SIBS_${new Date().toISOString().slice(0, 10)}.zip`);
       btnBatch.innerHTML = originalText;
     }).catch(err => {
       alert('Gagal membuat file ZIP: ' + err.message);
@@ -1181,12 +1263,14 @@
     });
   }
 
-  // ================= CETAK LEMBAR STIKER A4 (PRINT SHEET) =================
-  function openPrintPreview() {
+  // ================= CETAK LEMBAR STIKER A4 (PRINT SHEET DENGAN LOGO DI TENGAH) =================
+  async function openPrintPreview() {
     const gridContainer = document.getElementById('a4-grid-container');
+    const withLogo = document.getElementById('toggle-center-logo').checked;
     gridContainer.innerHTML = '';
 
-    CERTIFICATES_DATA.forEach((item, idx) => {
+    for (let idx = 0; idx < CERTIFICATES_DATA.length; idx++) {
+      const item = CERTIFICATES_DATA[idx];
       const verifyUrl = window.location.origin + '/verify/' + encodeURIComponent(item.id);
       const div = document.createElement('div');
       div.className = 'print-sticker-item';
@@ -1199,24 +1283,16 @@
       `;
       gridContainer.appendChild(div);
 
-      setTimeout(() => {
-        const slot = document.getElementById(`print-qr-slot-${idx}`);
-        if (slot) {
-          new QRCode(slot, {
-            text: verifyUrl,
-            width: 100,
-            height: 100,
-            colorDark: "#123d2f",
-            colorLight: "#ffffff",
-            correctLevel: QRCode.CorrectLevel.M
-          });
-        }
-      }, 20 * idx);
-    });
+      const qrCanvas = await generateQrCanvasWithLogo(verifyUrl, 250, withLogo);
+      const slot = document.getElementById(`print-qr-slot-${idx}`);
+      if (slot) {
+        slot.appendChild(qrCanvas);
+      }
+    }
 
     setTimeout(() => {
       window.print();
-    }, 500);
+    }, 400);
   }
 
   // ================= MODAL SETTINGS =================
@@ -1229,7 +1305,6 @@
   }
   function saveSheetSettings() {
     let raw = document.getElementById('input-sheet-id').value.trim();
-    // Parse if user pasted a full URL
     const match = raw.match(/\/d\/([a-zA-Z0-9-_]+)/);
     const sheetId = match ? match[1] : raw;
     localStorage.setItem('sibs_sheet_id', sheetId);
@@ -1239,7 +1314,6 @@
 
   // ================= MODAL MANUAL INPUT =================
   function openManualAddModal() {
-    // Generate next ID
     const nextNum = CERTIFICATES_DATA.length + 1;
     document.getElementById('m-id').value = 'SIBS-2026-' + String(nextNum).padStart(4, '0');
     document.getElementById('m-nama').value = '';
