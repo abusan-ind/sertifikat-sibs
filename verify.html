@@ -524,6 +524,7 @@
           renderError(targetId);
         });
 
+      function renderVerification(resp, queryId) {
         if (resp && resp.status === 'DUPLICATE_ERROR') {
           resultBox.innerHTML = `
             <div class="result-card">
