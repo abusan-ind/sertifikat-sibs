@@ -1,0 +1,929 @@
+<!--
+  ============================================================================
+  KODE HALAMAN VERIFIKASI SERTIFIKAT YAYASAN (UNTUK BLOGGER)
+  ============================================================================
+  Petunjuk Pemasangan di Blogger:
+  1. Masuk ke Dashboard Blogger -> Menu "Halaman" (Pages) -> Klik "+ Halaman Baru".
+  2. Beri Judul Halaman: "Cek Keaslian Sertifikat" (atau nama lain sesuai kebutuhan).
+  3. Ubah mode editor dari "Tampilan Menulis" ke "Tampilan HTML" (<>).
+  4. Hapus semua teks yang ada, lalu paste SELURUH KODE di bawah ini.
+  5. Cari baris bertuliskan:
+     const GAS_WEBAPP_URL = 'GANTI_DENGAN_URL_DEPLOYMENT_APPS_SCRIPT_ANDA';
+     ganti dengan URL Web App Google Apps Script Anda (yang berakhiran /exec).
+  6. Klik "Publikasikan". Selesai!
+-->
+
+<div id="yys-cert-app" class="yys-wrapper">
+  <!-- Header Card -->
+  <div class="yys-header">
+    <div class="yys-badge-official">
+      <span class="yys-pulse-dot"></span>
+      SYARIEF INTERNASIONAL BOARDING SCHOOL
+    </div>
+    <h1 class="yys-title">Verifikasi Keaslian Sertifikat</h1>
+    <p class="yys-subtitle">
+      Lembaga Pendidikan Al-Quran Syarief Institute Bondowoso<br>
+      <span style="font-size: 12px; color: #64748b;">Dusun Bunduh RT 09 RW 03, Desa Bataan, Kec. Tenggarang, Kab. Bondowoso</span>
+    </p>
+
+    <!-- Search / Input Form -->
+    <div class="yys-search-box">
+      <div class="yys-input-group">
+        <span class="yys-input-icon">🔍</span>
+        <input 
+          type="text" 
+          id="yys-cert-input" 
+          placeholder="Masukkan Nomor Sertifikat (cth: SIBS-2026-0001)" 
+          autocomplete="off"
+          spellcheck="false"
+        />
+        <button type="button" id="yys-btn-clear" class="yys-btn-clear" title="Hapus teks" style="display:none;">✕</button>
+      </div>
+      <button type="button" id="yys-btn-search" class="yys-btn-primary">
+        <span>Periksa</span>
+      </button>
+    </div>
+
+    <!-- Quick Example Chips -->
+    <div class="yys-hints">
+      <span>Contoh nomor santri:</span>
+      <button type="button" class="yys-chip" onclick="yysApplySample('SIBS-2026-0001')">SIBS-2026-0001</button>
+      <button type="button" class="yys-chip" onclick="yysApplySample('SIBS-2026-0002')">SIBS-2026-0002</button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div id="yys-loading-state" class="yys-state-card" style="display: none;">
+    <div class="yys-spinner"></div>
+    <h3 style="margin-top: 15px; font-size: 16px; color: #1e293b;">Menghubungkan ke Database Yayasan...</h3>
+    <p style="font-size: 13px; color: #64748b; margin-top: 5px;">Memeriksa keaslian nomor registrasi sertifikat...</p>
+  </div>
+
+  <!-- Result Container -->
+  <div id="yys-result-container" style="display: none;">
+    <!-- Konten hasil verifikasi akan dirender di sini via JavaScript -->
+  </div>
+
+  <!-- Footer Disclaimer -->
+  <div class="yys-footer">
+    <div class="yys-footer-inner">
+      <p>
+        🛡️ <b>Informasi Keamanan:</b> Halaman verifikasi ini membaca data langsung dari database penerbitan yayasan. 
+        Pastikan URL di address bar browser Anda adalah domain resmi yayasan kami.
+      </p>
+      <p style="margin-top: 8px; font-size: 11px; opacity: 0.85;">
+        Sistem ini memvalidasi keabsahan data registrasi penerbitan nomor sertifikat resmi lomba.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ================= CSS GAYA MODERN (SCOPED) ================= -->
+<style>
+  /* Root & Reset Khusus Widget */
+  #yys-cert-app {
+    --yys-primary: #1e40af;
+    --yys-primary-hover: #1d4ed8;
+    --yys-primary-soft: #eff6ff;
+    --yys-accent: #0284c7;
+    --yys-success: #10b981;
+    --yys-success-bg: #ecfdf5;
+    --yys-success-border: #a7f3d0;
+    --yys-success-dark: #065f46;
+    --yys-danger: #ef4444;
+    --yys-danger-bg: #fef2f2;
+    --yys-danger-border: #fecaca;
+    --yys-danger-dark: #991b1b;
+    --yys-warning: #f59e0b;
+    --yys-warning-bg: #fffbeb;
+    --yys-warning-border: #fde68a;
+    --yys-warning-dark: #92400e;
+    --yys-dark: #0f172a;
+    --yys-slate: #334155;
+    --yys-muted: #64748b;
+    --yys-light-bg: #f8fafc;
+    --yys-card-border: #e2e8f0;
+    --yys-shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+    --yys-shadow-md: 0 8px 30px rgba(15, 23, 42, 0.08);
+    --yys-radius: 16px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: var(--yys-slate);
+    line-height: 1.5;
+    box-sizing: border-box;
+    max-width: 760px;
+    margin: 20px auto;
+    padding: 0 12px;
+  }
+
+  #yys-cert-app * {
+    box-sizing: border-box;
+  }
+
+  /* Header Box */
+  .yys-header {
+    background: #ffffff;
+    border: 1px solid var(--yys-card-border);
+    border-radius: var(--yys-radius);
+    padding: 32px 24px;
+    text-align: center;
+    box-shadow: var(--yys-shadow-md);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .yys-header::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: linear-gradient(90deg, #1e40af, #3b82f6, #06b6d4);
+  }
+
+  .yys-badge-official {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--yys-primary-soft);
+    color: var(--yys-primary);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    border: 1px solid #dbeafe;
+    margin-bottom: 16px;
+  }
+
+  .yys-pulse-dot {
+    width: 8px;
+    height: 8px;
+    background-color: var(--yys-success);
+    border-radius: 50%;
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+    animation: yysPulse 1.8s infinite;
+  }
+
+  @keyframes yysPulse {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+    70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+  }
+
+  .yys-title {
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--yys-dark);
+    margin: 0 0 10px 0;
+    letter-spacing: -0.5px;
+  }
+
+  .yys-subtitle {
+    font-size: 14px;
+    color: var(--yys-muted);
+    max-width: 580px;
+    margin: 0 auto 24px auto;
+  }
+
+  /* Search Input Area */
+  .yys-search-box {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 540px;
+    margin: 0 auto;
+  }
+
+  @media (min-width: 560px) {
+    .yys-search-box {
+      flex-direction: row;
+    }
+  }
+
+  .yys-input-group {
+    position: relative;
+    flex: 1;
+    display: flex;
+    align-items: center;
+  }
+
+  .yys-input-icon {
+    position: absolute;
+    left: 14px;
+    font-size: 16px;
+    opacity: 0.6;
+    pointer-events: none;
+  }
+
+  #yys-cert-input {
+    width: 100%;
+    padding: 13px 38px 13px 42px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--yys-dark);
+    background: #f8fafc;
+    border: 2px solid var(--yys-card-border);
+    border-radius: 12px;
+    outline: none;
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+  }
+
+  #yys-cert-input:focus {
+    background: #ffffff;
+    border-color: var(--yys-primary);
+    box-shadow: 0 0 0 4px rgba(30, 64, 175, 0.12);
+  }
+
+  .yys-btn-clear {
+    position: absolute;
+    right: 12px;
+    background: #e2e8f0;
+    border: none;
+    border-radius: 50%;
+    width: 22px;
+    height: 22px;
+    font-size: 12px;
+    color: #475569;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+  }
+
+  .yys-btn-clear:hover {
+    background: #cbd5e1;
+  }
+
+  .yys-btn-primary {
+    background: var(--yys-primary);
+    color: #ffffff;
+    border: none;
+    border-radius: 12px;
+    padding: 13px 26px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 4px 12px rgba(30, 64, 175, 0.25);
+  }
+
+  .yys-btn-primary:hover {
+    background: var(--yys-primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(30, 64, 175, 0.35);
+  }
+
+  .yys-btn-primary:active {
+    transform: translateY(0);
+  }
+
+  /* Chips */
+  .yys-hints {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 16px;
+    font-size: 12px;
+    color: var(--yys-muted);
+  }
+
+  .yys-chip {
+    background: #f1f5f9;
+    border: 1px dashed #cbd5e1;
+    border-radius: 6px;
+    padding: 3px 8px;
+    font-size: 11px;
+    font-family: monospace;
+    font-weight: 600;
+    color: var(--yys-primary);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .yys-chip:hover {
+    background: #e2e8f0;
+    border-color: var(--yys-primary);
+  }
+
+  /* Loading State */
+  .yys-state-card {
+    background: #ffffff;
+    border: 1px solid var(--yys-card-border);
+    border-radius: var(--yys-radius);
+    padding: 40px 20px;
+    text-align: center;
+    margin-top: 20px;
+    box-shadow: var(--yys-shadow-md);
+  }
+
+  .yys-spinner {
+    width: 44px;
+    height: 44px;
+    border: 4px solid #e2e8f0;
+    border-top: 4px solid var(--yys-primary);
+    border-radius: 50%;
+    margin: 0 auto;
+    animation: yysSpin 0.9s linear infinite;
+  }
+
+  @keyframes yysSpin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  /* Result Card Styling */
+  .yys-result-card {
+    background: #ffffff;
+    border: 1px solid var(--yys-card-border);
+    border-radius: var(--yys-radius);
+    margin-top: 20px;
+    overflow: hidden;
+    box-shadow: var(--yys-shadow-md);
+    animation: yysFadeIn 0.35s ease-out;
+  }
+
+  @keyframes yysFadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Banner Status */
+  .yys-status-banner {
+    padding: 24px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .yys-status-banner.valid {
+    background: var(--yys-success-bg);
+    border-bottom: 2px solid var(--yys-success-border);
+  }
+
+  .yys-status-banner.revoked {
+    background: var(--yys-danger-bg);
+    border-bottom: 2px solid var(--yys-danger-border);
+  }
+
+  .yys-status-banner.not-found {
+    background: var(--yys-warning-bg);
+    border-bottom: 2px solid var(--yys-warning-border);
+  }
+
+  .yys-status-icon-wrap {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    flex-shrink: 0;
+  }
+
+  .valid .yys-status-icon-wrap {
+    background: #d1fae5;
+    color: var(--yys-success-dark);
+  }
+
+  .revoked .yys-status-icon-wrap {
+    background: #fee2e2;
+    color: var(--yys-danger-dark);
+  }
+
+  .not-found .yys-status-icon-wrap {
+    background: #fef3c7;
+    color: var(--yys-warning-dark);
+  }
+
+  .yys-status-info h2 {
+    font-size: 20px;
+    font-weight: 800;
+    margin: 0 0 4px 0;
+  }
+
+  .valid .yys-status-info h2 { color: var(--yys-success-dark); }
+  .revoked .yys-status-info h2 { color: var(--yys-danger-dark); }
+  .not-found .yys-status-info h2 { color: var(--yys-warning-dark); }
+
+  .yys-status-info p {
+    font-size: 13px;
+    margin: 0;
+    color: var(--yys-slate);
+    line-height: 1.4;
+  }
+
+  /* Certificate Details Body */
+  .yys-cert-body {
+    padding: 24px 22px;
+  }
+
+  .yys-details-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border: 1px solid var(--yys-card-border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .yys-details-table tr {
+    border-bottom: 1px solid var(--yys-card-border);
+  }
+
+  .yys-details-table tr:last-child {
+    border-bottom: none;
+  }
+
+  .yys-details-table td {
+    padding: 13px 16px;
+    font-size: 14px;
+    vertical-align: middle;
+  }
+
+  .yys-details-table td.yys-col-label {
+    width: 38%;
+    background: #f8fafc;
+    color: var(--yys-muted);
+    font-weight: 600;
+    border-right: 1px solid var(--yys-card-border);
+  }
+
+  .yys-details-table td.yys-col-val {
+    color: var(--yys-dark);
+    font-weight: 600;
+  }
+
+  .yys-val-id {
+    font-family: monospace;
+    letter-spacing: 1px;
+    font-size: 15px;
+    background: #eff6ff;
+    color: var(--yys-primary);
+    padding: 2px 8px;
+    border-radius: 6px;
+    display: inline-block;
+  }
+
+  .yys-val-nama {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--yys-primary);
+  }
+
+  .yys-tag-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 800;
+    padding: 4px 10px;
+    border-radius: 6px;
+    letter-spacing: 0.5px;
+  }
+
+  .yys-tag-status.aktif {
+    background: #dcfce7;
+    color: #15803d;
+  }
+
+  .yys-tag-status.dicabut {
+    background: #fee2e2;
+    color: #b91c1c;
+  }
+
+  /* Action Buttons Toolbar */
+  .yys-actions-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 1px dashed var(--yys-card-border);
+  }
+
+  .yys-btn-action {
+    flex: 1;
+    min-width: 140px;
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    border: 1px solid var(--yys-card-border);
+    background: #ffffff;
+    color: var(--yys-slate);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s;
+  }
+
+  .yys-btn-action:hover {
+    background: #f1f5f9;
+    color: var(--yys-dark);
+    border-color: #cbd5e1;
+  }
+
+  .yys-btn-action.highlight {
+    background: #eff6ff;
+    color: var(--yys-primary);
+    border-color: #bfdbfe;
+  }
+
+  .yys-btn-action.highlight:hover {
+    background: #dbeafe;
+  }
+
+  /* Footer Note */
+  .yys-footer {
+    margin-top: 24px;
+    background: #f8fafc;
+    border: 1px solid var(--yys-card-border);
+    border-radius: 12px;
+    padding: 16px 20px;
+  }
+
+  .yys-footer-inner p {
+    margin: 0;
+    font-size: 12px;
+    color: var(--yys-muted);
+    line-height: 1.6;
+    text-align: center;
+  }
+
+  /* Toast Notification */
+  .yys-toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1e293b;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 30px;
+    font-size: 13px;
+    font-weight: 600;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    z-index: 999999;
+    animation: yysToastIn 0.3s ease;
+  }
+
+  @keyframes yysToastIn {
+    from { opacity: 0; transform: translate(-50%, 15px); }
+    to { opacity: 1; transform: translate(-50%, 0); }
+  }
+
+  /* Print Media Query */
+  @media print {
+    body * { visibility: hidden; }
+    #yys-cert-app, #yys-result-container, #yys-result-container * {
+      visibility: visible;
+    }
+    #yys-cert-app {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      max-width: 100%;
+      margin: 0;
+      padding: 0;
+    }
+    .yys-header, .yys-actions-bar, .yys-footer {
+      display: none !important;
+    }
+    .yys-result-card {
+      border: 2px solid #000;
+      box-shadow: none;
+    }
+  }
+</style>
+
+<!-- ================= JAVASCRIPT LOGIKA INTEGRASI ================= -->
+<script>
+(function() {
+  /**
+   * ==============================================================
+   * KONFIGURASI URL GOOGLE APPS SCRIPT
+   * Ganti nilai string di bawah dengan URL Web App hasil deployment Anda!
+   * ==============================================================
+   */
+  const GAS_WEBAPP_URL = 'GANTI_DENGAN_URL_DEPLOYMENT_APPS_SCRIPT_ANDA';
+
+  // Elemen DOM
+  const inputEl = document.getElementById('yys-cert-input');
+  const btnSearch = document.getElementById('yys-btn-search');
+  const btnClear = document.getElementById('yys-btn-clear');
+  const loadingState = document.getElementById('yys-loading-state');
+  const resultContainer = document.getElementById('yys-result-container');
+
+  // Input listeners
+  inputEl.addEventListener('input', function() {
+    btnClear.style.display = this.value.trim().length > 0 ? 'flex' : 'none';
+  });
+
+  inputEl.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      triggerVerification();
+    }
+  });
+
+  btnClear.addEventListener('click', function() {
+    inputEl.value = '';
+    btnClear.style.display = 'none';
+    resultContainer.style.display = 'none';
+    inputEl.focus();
+  });
+
+  btnSearch.addEventListener('click', function() {
+    triggerVerification();
+  });
+
+  // Helper untuk tombol contoh (sample)
+  window.yysApplySample = function(sampleId) {
+    inputEl.value = sampleId;
+    btnClear.style.display = 'flex';
+    triggerVerification();
+  };
+
+  /**
+   * Inisialisasi: otomatis cek parameter "?id=..." pada URL
+   */
+  window.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const idFromUrl = urlParams.get('id') || urlParams.get('cert') || '';
+    if (idFromUrl.trim()) {
+      inputEl.value = idFromUrl.trim().toUpperCase();
+      btnClear.style.display = 'flex';
+      triggerVerification();
+    }
+  });
+
+  /**
+   * Eksekusi Verifikasi
+   */
+  function triggerVerification() {
+    const certId = inputEl.value.trim().toUpperCase();
+    if (!certId) {
+      showToast('⚠️ Silakan masukkan nomor sertifikat terlebih dahulu.');
+      inputEl.focus();
+      return;
+    }
+
+    // Tampilkan loading, sembunyikan hasil sebelumnya
+    loadingState.style.display = 'block';
+    resultContainer.style.display = 'none';
+
+    // Jika user belum mengganti URL default
+    if (GAS_WEBAPP_URL.includes('GANTI_DENGAN_URL')) {
+      setTimeout(function() {
+        loadingState.style.display = 'none';
+        renderDemoMode(certId);
+      }, 700);
+      return;
+    }
+
+    // Panggil Google Apps Script via JSON API (?action=api&id=...)
+    const fetchUrl = GAS_WEBAPP_URL + (GAS_WEBAPP_URL.includes('?') ? '&' : '?') + 'action=api&id=' + encodeURIComponent(certId);
+
+    fetch(fetchUrl, {
+      method: 'GET',
+      mode: 'cors',
+      cache: 'no-cache'
+    })
+    .then(function(res) {
+      if (!res.ok) {
+        throw new Error('Respons jaringan bermasalah (' + res.status + ')');
+      }
+      return res.json();
+    })
+    .then(function(data) {
+      loadingState.style.display = 'none';
+      renderResult(data, certId);
+    })
+    .catch(function(err) {
+      console.warn('Fetch langsung terkendala (CORS/Redirect), mencoba fallback JSONP/Iframe:', err);
+      // Fallback fallback jika browser memblokir fetch lintas-domain Google Apps Script
+      fallbackVerification(certId);
+    });
+  }
+
+  /**
+   * Render Hasil ke DOM
+   */
+  function renderResult(resp, queryId) {
+    resultContainer.style.display = 'block';
+
+    if (!resp || resp.status === 'NOT_FOUND' || resp.success === false) {
+      resultContainer.innerHTML = `
+        <div class="yys-result-card">
+          <div class="yys-status-banner not-found">
+            <div class="yys-status-icon-wrap">❓</div>
+            <div class="yys-status-info">
+              <h2>Sertifikat Tidak Ditemukan</h2>
+              <p>Nomor <b>${escHtml(queryId)}</b> tidak terdaftar dalam database arsip yayasan.</p>
+            </div>
+          </div>
+          <div class="yys-cert-body">
+            <div style="font-size: 13.5px; color: #475569; line-height: 1.6;">
+              <p><b>Kemungkinan penyebab:</b></p>
+              <ul style="padding-left: 20px; margin: 8px 0;">
+                <li>Terdapat kesalahan penulisan huruf atau angka (contoh: huruf O dan angka 0).</li>
+                <li>Sertifikat belum diinput atau disahkan oleh sekretariat yayasan.</li>
+                <li>Sertifikat bukan merupakan dokumen terbitan resmi yayasan kami.</li>
+              </ul>
+              <p>Jika Anda meyakini ini adalah kesalahan, silakan hubungi kontak panitia / sekretariat yayasan.</p>
+            </div>
+            <div class="yys-actions-bar">
+              <button type="button" class="yys-btn-action" onclick="document.getElementById('yys-cert-input').focus()">
+                🔍 Coba Nomor Lain
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+      scrollToResult();
+      return;
+    }
+
+    const item = resp.data;
+    const isValid = resp.status === 'VALID';
+
+    let bannerHtml = '';
+    let statusPillClass = isValid ? 'aktif' : 'dicabut';
+
+    if (isValid) {
+      bannerHtml = `
+        <div class="yys-status-banner valid">
+          <div class="yys-status-icon-wrap">✓</div>
+          <div class="yys-status-info">
+            <h2>Sertifikat Resmi Terdaftar</h2>
+            <p>Dokumen ini sah, asli, dan tercatat aktif dalam sistem database yayasan.</p>
+          </div>
+        </div>
+      `;
+    } else {
+      bannerHtml = `
+        <div class="yys-status-banner revoked">
+          <div class="yys-status-icon-wrap">⛔</div>
+          <div class="yys-status-info">
+            <h2>Sertifikat Tidak Berlaku / Dicabut</h2>
+            <p>Status sertifikat ini adalah <b>${escHtml(item.status)}</b> dan tidak diakui lagi keabsahannya.</p>
+          </div>
+        </div>
+      `;
+    }
+
+    resultContainer.innerHTML = `
+      <div class="yys-result-card">
+        ${bannerHtml}
+        <div class="yys-cert-body">
+          <table class="yys-details-table">
+            <tr>
+              <td class="yys-col-label">Nomor Sertifikat</td>
+              <td class="yys-col-val"><span class="yys-val-id">${escHtml(item.id)}</span></td>
+            </tr>
+            <tr>
+              <td class="yys-col-label">Nama Penerima</td>
+              <td class="yys-col-val"><span class="yys-val-nama">${escHtml(item.nama)}</span></td>
+            </tr>
+            <tr>
+              <td class="yys-col-label">Lomba / Kegiatan</td>
+              <td class="yys-col-val">${escHtml(item.lomba)}</td>
+            </tr>
+            <tr>
+              <td class="yys-col-label">Predikat / Prestasi</td>
+              <td class="yys-col-val">${escHtml(item.predikat || 'Peserta')}</td>
+            </tr>
+            <tr>
+              <td class="yys-col-label">Tanggal Penerbitan</td>
+              <td class="yys-col-val">${escHtml(item.tanggal)}</td>
+            </tr>
+            <tr>
+              <td class="yys-col-label">Status Keabsahan</td>
+              <td class="yys-col-val">
+                <span class="yys-tag-status ${statusPillClass}">
+                  ● ${escHtml(item.status)}
+                </span>
+              </td>
+            </tr>
+          </table>
+
+          <div class="yys-actions-bar">
+            <button type="button" class="yys-btn-action highlight" onclick="window.print()">
+              🖨️ Cetak Bukti Verifikasi
+            </button>
+            <button type="button" class="yys-btn-action" onclick="yysCopyShareLink('${escHtml(item.id)}')">
+              🔗 Salin Tautan
+            </button>
+            <button type="button" class="yys-btn-action" onclick="yysResetSearch()">
+              🔄 Cek Nomor Lain
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    scrollToResult();
+  }
+
+  /**
+   * Fallback jika fetch terblokir: embed inline frame tersembunyi/dinamis
+   */
+  function fallbackVerification(certId) {
+    resultContainer.style.display = 'block';
+    resultContainer.innerHTML = `
+      <div class="yys-result-card" style="padding: 10px;">
+        <iframe 
+          src="${GAS_WEBAPP_URL}?id=${encodeURIComponent(certId)}" 
+          style="width: 100%; height: 580px; border: none; border-radius: 12px;"
+          title="Verifikasi Sertifikat">
+        </iframe>
+      </div>
+    `;
+    loadingState.style.display = 'none';
+    scrollToResult();
+  }
+
+  /**
+   * Mode Demo (jika URL Apps Script belum diganti oleh pengguna)
+   */
+  function renderDemoMode(queryId) {
+    const sampleDb = {
+      'SIBS-2026-0001': { id: 'SIBS-2026-0001', nama: 'Muhammad Rizky Pratama', lomba: 'Musabaqah Hifdzil Qur\'an (MHQ) 30 Juz', predikat: 'Juara 1 Tingkat Provinsi', tanggal: '18 Oktober 2026', status: 'AKTIF' },
+      'SIBS-2026-0002': { id: 'SIBS-2026-0002', nama: 'Aisyah Nur Salsabila', lomba: 'Olimpiade Bahasa Arab & Da\'iyah Putri', predikat: 'Juara 1', tanggal: '18 Oktober 2026', status: 'AKTIF' },
+      'SIBS-2026-0003': { id: 'SIBS-2026-0003', nama: 'Farhan Zulkarnain', lomba: 'Lomba Tilawatil Qur\'an Remaja 2026', predikat: 'Peserta', tanggal: '18 Oktober 2026', status: 'DICABUT' }
+    };
+
+    const match = sampleDb[queryId];
+    if (match) {
+      renderResult({
+        success: true,
+        status: match.status === 'AKTIF' ? 'VALID' : 'REVOKED',
+        data: match
+      }, queryId);
+    } else {
+      renderResult({
+        success: false,
+        status: 'NOT_FOUND'
+      }, queryId);
+    }
+
+    showToast('ℹ️ Menampilkan data contoh (Demo Mode). Sambungkan URL Apps Script Anda.');
+  }
+
+  // Copy share link helper
+  window.yysCopyShareLink = function(id) {
+    const currentUrl = new URL(window.location.href);
+    currentUrl.searchParams.set('id', id);
+    navigator.clipboard.writeText(currentUrl.toString()).then(function() {
+      showToast('✅ Tautan verifikasi berhasil disalin!');
+    }).catch(function() {
+      showToast('Tautan: ' + currentUrl.toString());
+    });
+  };
+
+  // Reset helper
+  window.yysResetSearch = function() {
+    inputEl.value = '';
+    btnClear.style.display = 'none';
+    resultContainer.style.display = 'none';
+    inputEl.focus();
+  };
+
+  function scrollToResult() {
+    resultContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function showToast(msg) {
+    const existing = document.querySelector('.yys-toast');
+    if (existing) existing.remove();
+
+    const toast = document.createElement('div');
+    toast.className = 'yys-toast';
+    toast.textContent = msg;
+    document.body.appendChild(toast);
+
+    setTimeout(function() {
+      toast.remove();
+    }, 3200);
+  }
+
+  function escHtml(str) {
+    return String(str || '').replace(/[&<>"']/g, function(c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+})();
+</script>

@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hasil Verifikasi Sertifikat - Syarief Internasional Boarding School</title>
+  
+  <meta name="description" content="Hasil verifikasi resmi keabsahan dan registrasi sertifikat Syarief Internasional Boarding School Bondowoso.">
+  <meta property="og:title" content="Hasil Verifikasi Sertifikat - Syarief Internasional Boarding School">
+  <meta property="og:description" content="Pemeriksaan keaslian sertifikat santri/peserta berdasarkan basis data Lembaga Pendidikan Al-Quran Syarief Institute Bondowoso.">
+  <meta property="og:type" content="website">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  
+  <!-- QRCode.js Library for dynamic QR thumbnail -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <style>
+    :root {
+      --primary: #064e3b; /* Deep Emerald */
+      --primary-hover: #022c22;
+      --primary-soft: #ecfdf5;
+      --accent: #b45309;
+      --gold: #d97706;
+      --success: #059669;
+      --success-bg: #ecfdf5;
+      --success-border: #a7f3d0;
+      --success-text: #065f46;
+      --danger: #dc2626;
+      --danger-bg: #fef2f2;
+      --danger-border: #fecaca;
+      --danger-text: #991b1b;
+      --warning: #d97706;
+      --warning-bg: #fffbeb;
+      --warning-border: #fde68a;
+      --warning-text: #92400e;
+      --slate-900: #0f172a;
+      --slate-800: #1e293b;
+      --slate-600: #475569;
+      --slate-500: #64748b;
+      --slate-200: #e2e8f0;
+      --slate-100: #f1f5f9;
+      --shadow-lg: 0 20px 25px -5px rgba(6, 78, 59, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #f8fafc;
+      color: var(--slate-800);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top Navbar */
+    .navbar {
+      background: #ffffff;
+      border-bottom: 2px solid #e2e8f0;
+      padding: 14px 20px;
+    }
+    .nav-container {
+      max-width: 860px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .brand-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--slate-900);
+    }
+    .brand-crest {
+      width: 38px;
+      height: 38px;
+      background: linear-gradient(135deg, var(--primary), #047857);
+      border: 1.5px solid var(--gold);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 800;
+      font-size: 16px;
+    }
+    .brand-title {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--primary);
+      line-height: 1.2;
+    }
+    .brand-sub {
+      font-size: 11px;
+      color: var(--accent);
+      font-weight: 600;
+    }
+    .nav-home-btn {
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--primary);
+      text-decoration: none;
+      background: var(--primary-soft);
+      padding: 7px 14px;
+      border-radius: 8px;
+      border: 1px solid #a7f3d0;
+      transition: all 0.2s;
+    }
+    .nav-home-btn:hover { background: #d1fae5; }
+
+    /* Main Container */
+    .main-content {
+      flex: 1;
+      max-width: 780px;
+      width: 100%;
+      margin: 32px auto;
+      padding: 0 16px;
+    }
+
+    /* Loading Card */
+    #loading-box {
+      background: #ffffff;
+      border-radius: var(--radius);
+      border: 1px solid var(--slate-200);
+      padding: 48px 20px;
+      text-align: center;
+      box-shadow: var(--shadow-lg);
+    }
+    .spinner {
+      width: 48px;
+      height: 48px;
+      border: 4px solid #e2e8f0;
+      border-top: 4px solid var(--primary);
+      border-radius: 50%;
+      margin: 0 auto;
+      animation: spin 0.9s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Result Card */
+    .result-card {
+      background: #ffffff;
+      border-radius: var(--radius);
+      border: 1px solid var(--slate-200);
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+      animation: slideUp 0.35s ease-out;
+      position: relative;
+    }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Status Banner */
+    .status-banner {
+      padding: 26px 24px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      border-bottom: 2px solid transparent;
+    }
+    .status-banner.valid {
+      background: var(--success-bg);
+      border-color: var(--success-border);
+    }
+    .status-banner.revoked {
+      background: var(--danger-bg);
+      border-color: var(--danger-border);
+    }
+    .status-banner.not-found {
+      background: var(--warning-bg);
+      border-color: var(--warning-border);
+    }
+
+    .badge-icon {
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      flex-shrink: 0;
+    }
+    .valid .badge-icon { background: #d1fae5; color: var(--success-text); }
+    .revoked .badge-icon { background: #fee2e2; color: var(--danger-text); }
+    .not-found .badge-icon { background: #fef3c7; color: var(--warning-text); }
+
+    .status-text h2 {
+      font-size: 20px;
+      font-weight: 800;
+      margin-bottom: 4px;
+      letter-spacing: -0.3px;
+    }
+    .valid .status-text h2 { color: var(--success-text); }
+    .revoked .status-text h2 { color: var(--danger-text); }
+    .not-found .status-text h2 { color: var(--warning-text); }
+
+    .status-text p {
+      font-size: 13px;
+      color: var(--slate-600);
+      line-height: 1.4;
+    }
+
+    /* Certificate Body */
+    .cert-body {
+      padding: 26px 24px;
+    }
+
+    /* Institution Header Box inside result */
+    .inst-header-box {
+      background: #f8fafc;
+      border: 1px solid var(--slate-200);
+      border-radius: 12px;
+      padding: 14px 18px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .inst-header-box h3 {
+      font-size: 14.5px;
+      font-weight: 800;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .inst-header-box p {
+      font-size: 11.5px;
+      color: var(--slate-600);
+      margin-top: 2px;
+    }
+
+    /* Table Details */
+    .details-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      border: 1px solid var(--slate-200);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+    .details-table tr {
+      border-bottom: 1px solid var(--slate-200);
+    }
+    .details-table tr:last-child {
+      border-bottom: none;
+    }
+    .details-table td {
+      padding: 13px 16px;
+      font-size: 13.5px;
+      vertical-align: middle;
+    }
+    .details-table td.col-label {
+      width: 36%;
+      background: var(--slate-50);
+      color: var(--slate-500);
+      font-weight: 600;
+      border-right: 1px solid var(--slate-200);
+    }
+    .details-table td.col-val {
+      font-weight: 600;
+      color: var(--slate-900);
+    }
+
+    .id-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      background: var(--primary-soft);
+      color: var(--primary);
+      padding: 3px 10px;
+      border-radius: 6px;
+      display: inline-block;
+      font-weight: 700;
+      border: 1px solid #a7f3d0;
+    }
+    .nama-penerima {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--primary);
+    }
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 800;
+      padding: 4px 12px;
+      border-radius: 999px;
+      letter-spacing: 0.5px;
+    }
+    .status-pill.aktif { background: #dcfce7; color: #15803d; }
+    .status-pill.dicabut { background: #fee2e2; color: #b91c1c; }
+
+    /* Signee Verification Card */
+    .signee-card {
+      background: #fafaf9;
+      border: 1px solid #e7e5e4;
+      border-radius: 12px;
+      padding: 14px 18px;
+      margin-bottom: 22px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+    .signee-text h5 {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 3px;
+    }
+    .signee-name {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--slate-900);
+    }
+    .signee-role {
+      font-size: 11.5px;
+      color: var(--slate-600);
+    }
+    .signee-nik {
+      font-size: 11px;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--slate-500);
+    }
+
+    /* QR & Security Stamp */
+    .security-strip {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      background: #f8fafc;
+      border: 1px dashed var(--slate-200);
+      border-radius: 12px;
+      padding: 14px 18px;
+      margin-bottom: 22px;
+    }
+    .strip-info h4 {
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 3px;
+    }
+    .strip-info p {
+      font-size: 11.5px;
+      color: var(--slate-500);
+      line-height: 1.4;
+    }
+    #qr-thumb {
+      width: 60px;
+      height: 60px;
+      flex-shrink: 0;
+      background: white;
+      padding: 4px;
+      border-radius: 6px;
+      border: 1px solid var(--slate-200);
+    }
+    #qr-thumb img {
+      width: 52px !important;
+      height: 52px !important;
+    }
+
+    /* Action Buttons */
+    .actions-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    @media (max-width: 600px) {
+      .actions-grid { grid-template-columns: 1fr; }
+    }
+    .btn-act {
+      padding: 11px 14px;
+      border-radius: 10px;
+      font-size: 12.5px;
+      font-weight: 700;
+      cursor: pointer;
+      border: 1px solid var(--slate-200);
+      background: #ffffff;
+      color: var(--slate-800);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .btn-act:hover {
+      background: var(--slate-100);
+    }
+    .btn-act.primary {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+    .btn-act.primary:hover {
+      background: var(--primary-hover);
+    }
+    .btn-act.wa {
+      background: #25d366;
+      color: white;
+      border-color: #25d366;
+    }
+
+    /* Footer Note */
+    .footer-disclaimer {
+      text-align: center;
+      font-size: 11.5px;
+      color: var(--slate-500);
+      margin-top: 24px;
+      line-height: 1.5;
+    }
+
+    /* Print View */
+    @media print {
+      body { background: white; }
+      .navbar, .actions-grid, .footer-disclaimer { display: none !important; }
+      .main-content { margin: 0; padding: 0; max-width: 100%; }
+      .result-card { box-shadow: none; border: 2px solid #000; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <header class="navbar">
+    <div class="nav-container">
+      <a href="/" class="brand-wrap">
+        <div class="brand-crest">SIBS</div>
+        <div>
+          <div class="brand-title">Syarief Internasional Boarding School</div>
+          <div class="brand-sub">Syarief Institute Bondowoso</div>
+        </div>
+      </a>
+      <a href="/" class="nav-home-btn">🔍 Cek Nomor Lain</a>
+    </div>
+  </header>
+
+  <!-- Main View -->
+  <main class="main-content">
+    
+    <!-- Loading State -->
+    <div id="loading-box">
+      <div class="spinner"></div>
+      <h3 style="margin-top: 18px; font-size: 16px; color: var(--primary);">Memeriksa Basis Data Syarief Institute...</h3>
+      <p style="font-size: 13px; color: var(--slate-500); margin-top: 6px;">Menghubungkan ke buku induk registrasi sertifikat yayasan...</p>
+    </div>
+
+    <!-- Result Display Container -->
+    <div id="result-box" style="display: none;"></div>
+
+    <div class="footer-disclaimer">
+      Syarief Internasional Boarding School • Dusun Bunduh RT 09 RW 03, Desa Bataan, Kec. Tenggarang, Kab. Bondowoso<br>
+      Dokumen ini diverifikasi secara sah melalui sistem data resmi yayasan.
+    </div>
+
+  </main>
+
+  <script>
+    (function() {
+      function getTargetId() {
+        const urlParams = new URLSearchParams(window.location.search);
+        let id = urlParams.get('id') || urlParams.get('cert') || '';
+        if (!id) {
+          const pathname = window.location.pathname;
+          const match = pathname.match(/\/verify\/([^\/\?#]+)/i);
+          if (match && match[1]) {
+            id = decodeURIComponent(match[1]);
+          }
+        }
+        return (id || '').trim().toUpperCase();
+      }
+
+      const targetId = getTargetId();
+      const loadingBox = document.getElementById('loading-box');
+      const resultBox = document.getElementById('result-box');
+
+      if (!targetId) {
+        loadingBox.style.display = 'none';
+        resultBox.style.display = 'block';
+        resultBox.innerHTML = `
+          <div class="result-card">
+            <div class="status-banner not-found">
+              <div class="badge-icon">❓</div>
+              <div class="status-text">
+                <h2>Nomor Sertifikat Belum Diisi</h2>
+                <p>Silakan masukkan nomor sertifikat melalui halaman pencarian utama yayasan.</p>
+              </div>
+            </div>
+            <div class="cert-body" style="text-align: center;">
+              <a href="/" class="btn-act primary" style="display: inline-flex;">Kembali ke Halaman Pencarian</a>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      // Panggil API Vercel Serverless Function
+      fetch('/api/verify?id=' + encodeURIComponent(targetId))
+        .then(res => res.json())
+        .then(resp => {
+          loadingBox.style.display = 'none';
+          resultBox.style.display = 'block';
+          renderVerification(resp, targetId);
+        })
+        .catch(err => {
+          console.error(err);
+          loadingBox.style.display = 'none';
+          resultBox.style.display = 'block';
+          renderError(targetId);
+        });
+
+      function renderVerification(resp, queryId) {
+        if (!resp || !resp.success || resp.status === 'NOT_FOUND') {
+          resultBox.innerHTML = `
+            <div class="result-card">
+              <div class="status-banner not-found">
+                <div class="badge-icon">❌</div>
+                <div class="status-text">
+                  <h2>Sertifikat Tidak Ditemukan</h2>
+                  <p>Nomor <b>${esc(queryId)}</b> tidak tercatat dalam buku induk penerbitan yayasan.</p>
+                </div>
+              </div>
+              <div class="cert-body">
+                <p style="font-size: 13.5px; color: var(--slate-600); line-height: 1.6; margin-bottom: 20px;">
+                  Sertifikat dengan nomor di atas tidak terdaftar resmi pada <b>Syarief Internasional Boarding School</b>. 
+                  Mohon periksa kembali apakah ada kesalahan pengetikan huruf atau angka.
+                </p>
+                <div class="actions-grid">
+                  <a href="/" class="btn-act primary">🔍 Periksa Nomor Lain</a>
+                </div>
+              </div>
+            </div>
+          `;
+          return;
+        }
+
+        const data = resp.data;
+        const isValid = resp.status === 'VALID';
+
+        let bannerHtml = '';
+        if (isValid) {
+          bannerHtml = `
+            <div class="status-banner valid">
+              <div class="badge-icon">✓</div>
+              <div class="status-text">
+                <h2>Sertifikat Resmi Terdaftar & Sah</h2>
+                <p>Dokumen ini asli dan tercatat aktif pada database Syarief Internasional Boarding School.</p>
+              </div>
+            </div>
+          `;
+        } else {
+          bannerHtml = `
+            <div class="status-banner revoked">
+              <div class="badge-icon">⛔</div>
+              <div class="status-text">
+                <h2>Status: Dicabut / Dibatalkan</h2>
+                <p>Sertifikat ini telah <b>DICABUT</b> atau dinyatakan tidak berlaku lagi oleh pimpinan yayasan.</p>
+              </div>
+            </div>
+          `;
+        }
+
+        const statusClass = isValid ? 'aktif' : 'dicabut';
+        const verifyUrl = window.location.origin + '/verify/' + encodeURIComponent(data.id);
+        const waText = encodeURIComponent(`Hasil verifikasi sertifikat resmi Syarief Internasional Boarding School Bondowoso: Nomor ${data.id} atas nama ${data.nama} dinyatakan SAH & TERDAFTAR. Tautan: ${verifyUrl}`);
+
+        resultBox.innerHTML = `
+          <div class="result-card">
+            ${bannerHtml}
+            <div class="cert-body">
+              
+              <!-- Institution Header -->
+              <div class="inst-header-box">
+                <h3>Syarief Internasional Boarding School</h3>
+                <p>Lembaga Pendidikan Al-Quran Syarief Institute Bondowoso</p>
+                <p style="font-size: 11px; color: #64748b; margin-top: 3px;">
+                  Dusun Bunduh RT 09 RW 03, Desa Bataan, Kec. Tenggarang, Kab. Bondowoso
+                </p>
+              </div>
+
+              <!-- Main Details Table -->
+              <table class="details-table">
+                <tr>
+                  <td class="col-label">Nomor Registrasi</td>
+                  <td class="col-val"><span class="id-tag">${esc(data.id)}</span></td>
+                </tr>
+                <tr>
+                  <td class="col-label">Nama Santri / Peserta</td>
+                  <td class="col-val"><span class="nama-penerima">${esc(data.nama)}</span></td>
+                </tr>
+                <tr>
+                  <td class="col-label">Kegiatan / Lomba</td>
+                  <td class="col-val">${esc(data.lomba)}</td>
+                </tr>
+                <tr>
+                  <td class="col-label">Predikat / Prestasi</td>
+                  <td class="col-val" style="color: var(--accent); font-weight: 700;">${esc(data.predikat)}</td>
+                </tr>
+                <tr>
+                  <td class="col-label">Tanggal Diterbitkan</td>
+                  <td class="col-val">${esc(data.tanggal)}</td>
+                </tr>
+                <tr>
+                  <td class="col-label">Status Dokumen</td>
+                  <td class="col-val">
+                    <span class="status-pill ${statusClass}">● ${esc(data.status)}</span>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Signee Card -->
+              <div class="signee-card">
+                <div class="signee-text">
+                  <h5>Pejabat Penanda Tangan Dokumen</h5>
+                  <div class="signee-name">Anggit Hadi Prasaja, M.Pd</div>
+                  <div class="signee-role">Kepala Lembaga Pendidikan Al-Quran Syarief Institute Bondowoso</div>
+                  <div class="signee-nik">NIK: 357110905950006</div>
+                </div>
+                <div style="font-size: 24px; opacity: 0.85;">🖋️</div>
+              </div>
+
+              <!-- QR Code & Security Stamp -->
+              <div class="security-strip">
+                <div class="strip-info">
+                  <h4>Validasi Database Yayasan</h4>
+                  <p>Nomor Dokumen: ${esc(data.id)} • Hasil verifikasi ini dapat dicetak sebagai bukti fisik keabsahan.</p>
+                </div>
+                <div id="qr-thumb"></div>
+              </div>
+
+              <!-- Action Toolbar -->
+              <div class="actions-grid">
+                <button type="button" class="btn-act primary" onclick="window.print()">
+                  🖨️ Cetak Lembar Bukti
+                </button>
+                <a href="https://wa.me/?text=${waText}" target="_blank" class="btn-act wa">
+                  📲 Bagikan ke WA
+                </a>
+                <button type="button" class="btn-act" onclick="copyLink('${verifyUrl}')">
+                  🔗 Salin Tautan
+                </button>
+              </div>
+
+            </div>
+          </div>
+        `;
+
+        new QRCode(document.getElementById('qr-thumb'), {
+          text: verifyUrl,
+          width: 52,
+          height: 52,
+          colorDark: "#064e3b",
+          colorLight: "#ffffff",
+          correctLevel: QRCode.CorrectLevel.M
+        });
+      }
+
+      function renderError(queryId) {
+        resultBox.innerHTML = `
+          <div class="result-card">
+            <div class="status-banner revoked">
+              <div class="badge-icon">⚠️</div>
+              <div class="status-text">
+                <h2>Gagal Menghubungi Server</h2>
+                <p>Terjadi kendala saat menghubungkan ke database yayasan.</p>
+              </div>
+            </div>
+            <div class="cert-body" style="text-align: center;">
+              <button type="button" class="btn-act primary" onclick="location.reload()">Coba Muat Ulang</button>
+            </div>
+          </div>
+        `;
+      }
+
+      window.copyLink = function(url) {
+        navigator.clipboard.writeText(url).then(() => {
+          alert('✅ Tautan verifikasi berhasil disalin:\n' + url);
+        });
+      };
+
+      function esc(str) {
+        return String(str || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+      }
+    })();
+  </script>
+</body>
+</html>

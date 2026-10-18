@@ -1,0 +1,20 @@
+{
+  "name": "sistem-verifikasi-sertifikat-yayasan",
+  "version": "1.0.0",
+  "description": "Sistem Penerbitan dan Verifikasi Sertifikat Lomba Yayasan Berbasis Vercel dan Google Sheets",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "sertifikat",
+    "verifikasi",
+    "qr-code",
+    "yayasan",
+    "vercel",
+    "google-sheets"
+  ],
+  "author": "Yayasan",
+  "license": "MIT"
+}
