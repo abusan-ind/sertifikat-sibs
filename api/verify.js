@@ -129,10 +129,14 @@ module.exports = async (req, res) => {
 
     // OPSI 3: Fallback ke database JSON lokal (data/certificates.json)
     if (records.length === 0) {
-      const jsonPath = path.join(process.cwd(), 'data', 'certificates.json');
-      if (fs.existsSync(jsonPath)) {
-        const rawJson = fs.readFileSync(jsonPath, 'utf8');
-        records = JSON.parse(rawJson);
+      try {
+        records = require('../data/certificates.json');
+      } catch (e) {
+        try {
+          records = require('./data/certificates.json');
+        } catch (e2) {
+          records = [];
+        }
       }
     }
 
