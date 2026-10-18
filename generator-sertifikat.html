@@ -988,8 +988,8 @@
 
 <!-- Off-screen Sticker Element untuk HTML2Canvas Export -->
 <div id="sticker-render-box">
-  <img src="/logo-sibs.png" alt="Logo SIBS" class="sticker-logo-src" />
-  <div class="sticker-head-text">SYARIF INTERNASIONAL BOARDING SCHOOL</div>
+  <img src="/logo-syarief.png" alt="Logo Syarief" class="sticker-logo-src" />
+  <div class="sticker-head-text">LEMBAGA PENDIDIKAN AL-QURAN SYARIEF INSTITUTE</div>
   <div class="sticker-qr-slot" id="stk-qr-box"></div>
   <div class="sticker-id-pill" id="stk-id-txt">SIBS-2026-0001</div>
   <div class="sticker-name-txt" id="stk-nama-txt">Nama Santri</div>
@@ -1007,10 +1007,10 @@
   let FILTERED_DATA = [];
   let DUPLICATE_IDS = [];
 
-  // Pre-load Logo Yayasan Resmi untuk dipasang di tengah QR
+  // Pre-load Logo Yayasan Resmi untuk dipasang di tengah QR (Logo Baru LPQ Syarief Institute)
   const LOGO_IMG = new Image();
   LOGO_IMG.crossOrigin = 'anonymous';
-  LOGO_IMG.src = '/logo-sibs.png';
+  LOGO_IMG.src = '/logo-syarief.png';
   let isLogoLoaded = false;
   LOGO_IMG.onload = () => { isLogoLoaded = true; };
 
@@ -1143,8 +1143,15 @@
     if (alertBox) alertBox.style.display = 'none';
   }
 
-  // ================= CORE FUNCTION: GENERATE QR DENGAN LOGO DI TENGAH =================
-  function generateQrCanvasWithLogo(textUrl, size = 800, withLogo = true, qrColor = '#123d2f') {
+  // ================= CORE FUNCTION: GENERATE QR DENGAN LOGO DI TENGAH (100% SCANNABLE) =================
+  /**
+   * Menggambar QR Code pada Canvas dengan:
+   * 1. Quiet zone (margin putih 8%) pada 4 sisi agar kamera HP mendeteksi pola QR dengan sempurna.
+   * 2. Warna hitam murni (#000000) untuk kontras optik 100%.
+   * 3. Logo Syarief Institute di tengah dengan proporsi optimal (20%) ber-badge putih rounded.
+   * 4. Error correction level H (30%) sehingga tetap 100% terbaca di semua perangkat.
+   */
+  function generateQrCanvasWithLogo(textUrl, size = 800, withLogo = true, qrColor = '#000000') {
     return new Promise((resolve) => {
       const tempDiv = document.createElement('div');
       tempDiv.style.width = size + 'px';
@@ -1175,47 +1182,55 @@
           finalCanvas.height = size;
           const ctx = finalCanvas.getContext('2d');
 
-          // 1. Gambar Base QR Code
-          ctx.drawImage(sourceElement, 0, 0, size, size);
+          // 1. Gambar latar belakang putih bersih di seluruh canvas
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, size, size);
 
-          // 2. Gambar Badge Logo di Tengah
+          // 2. Berikan Margin / Quiet Zone sebesar 8% (PENTING untuk scanner kamera HP)
+          const margin = Math.round(size * 0.08);
+          const activeQrSize = size - margin * 2;
+          ctx.drawImage(sourceElement, margin, margin, activeQrSize, activeQrSize);
+
+          // 3. Gambar Badge Logo di Tengah (Jika diaktifkan)
           if (withLogo && (isLogoLoaded || (LOGO_IMG && LOGO_IMG.naturalWidth > 0))) {
-            const badgeScale = 0.26;
-            const badgeSize = Math.round(size * badgeScale);
-            const badgeX = Math.round((size - badgeSize) / 2);
-            const badgeY = Math.round((size - badgeSize) / 2);
-            const radius = Math.round(badgeSize * 0.22);
+            const logoSize = Math.round(activeQrSize * 0.20); // 20% area aktif
+            const pad = Math.round(logoSize * 0.12);
+            const badgeSize = logoSize + pad * 2;
+            const bx = (size - badgeSize) / 2;
+            const by = (size - badgeSize) / 2;
+            const radius = Math.round(badgeSize * 0.18);
 
+            // Background badge putih dengan bayangan lembut
             ctx.save();
             ctx.beginPath();
-            drawRoundRect(ctx, badgeX, badgeY, badgeSize, badgeSize, radius);
+            drawRoundRect(ctx, bx, by, badgeSize, badgeSize, radius);
             ctx.fillStyle = '#ffffff';
-            ctx.shadowColor = 'rgba(0, 0, 0, 0.25)';
-            ctx.shadowBlur = Math.round(size * 0.015);
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
+            ctx.shadowBlur = Math.round(size * 0.012);
             ctx.shadowOffsetX = 0;
-            ctx.shadowOffsetY = Math.round(size * 0.005);
+            ctx.shadowOffsetY = Math.round(size * 0.003);
             ctx.fill();
             ctx.restore();
 
+            // Border badge warna biru Syarief Institute
             ctx.save();
             ctx.beginPath();
-            drawRoundRect(ctx, badgeX, badgeY, badgeSize, badgeSize, radius);
-            ctx.lineWidth = Math.max(2, Math.round(size * 0.006));
-            ctx.strokeStyle = '#123d2f';
+            drawRoundRect(ctx, bx, by, badgeSize, badgeSize, radius);
+            ctx.lineWidth = Math.max(1.5, Math.round(size * 0.005));
+            ctx.strokeStyle = '#0284c7';
             ctx.stroke();
             ctx.restore();
 
-            const pad = Math.round(badgeSize * 0.10);
-            const logoW = badgeSize - pad * 2;
-            const logoH = badgeSize - pad * 2;
-            ctx.drawImage(LOGO_IMG, badgeX + pad, badgeY + pad, logoW, logoH);
+            // Gambar logo Syarief di tengah badge
+            const lx = (size - logoSize) / 2;
+            const ly = (size - logoSize) / 2;
+            ctx.drawImage(LOGO_IMG, lx, ly, logoSize, logoSize);
           }
 
           document.body.removeChild(tempDiv);
           resolve(finalCanvas);
         }
       }, 30);
-    });
   }
 
   function drawRoundRect(ctx, x, y, width, height, radius) {

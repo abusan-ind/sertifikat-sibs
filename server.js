@@ -25,10 +25,16 @@ const VERIFY_HTML = loadStaticFile('verify.html');
 const GENERATOR_HTML = loadStaticFile('generator-sertifikat.html');
 
 let LOGO_BUFFER = null;
+let LOGO_SYARIEF_BUFFER = null;
 try {
   LOGO_BUFFER = fs.readFileSync(path.join(__dirname, 'logo-sibs.png'));
 } catch (e) {
   console.warn('[WARN] Gagal membaca logo-sibs.png:', e.message);
+}
+try {
+  LOGO_SYARIEF_BUFFER = fs.readFileSync(path.join(__dirname, 'logo-syarief.png'));
+} catch (e) {
+  console.warn('[WARN] Gagal membaca logo-syarief.png:', e.message);
 }
 
 const MIME_TYPES = {
@@ -51,7 +57,15 @@ function handleRequest(req, res) {
     const reqUrl = new URL(req.url, `http://${host}`);
     const pathname = reqUrl.pathname;
 
-    // Route Logo Yayasan Resmi
+    // Route Logo Yayasan Resmi SIBS & LPQ Syarief Institute
+    if (pathname === '/logo-syarief.png') {
+      if (LOGO_SYARIEF_BUFFER) {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'image/png');
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+        return res.end(LOGO_SYARIEF_BUFFER);
+      }
+    }
     if (pathname === '/logo-sibs.png' || pathname === '/logo.png') {
       if (LOGO_BUFFER) {
         res.statusCode = 200;
