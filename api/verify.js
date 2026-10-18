@@ -18,7 +18,6 @@ const PROFIL_YAYASAN = {
 function fetchHttps(url, timeoutMs = 4000) {
   return new Promise((resolve, reject) => {
     const request = https.get(url, (res) => {
-      // Tangani redirect (HTTP 301, 302, 307)
       if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
         return fetchHttps(res.headers.location, timeoutMs).then(resolve).catch(reject);
       }
@@ -82,7 +81,8 @@ async function loadAllRecords(customSpreadsheetId) {
       if (csvRes.status === 200 && csvRes.data) {
         const parsed = parseCsv(csvRes.data);
         // Lewati baris header pertama
-        records = parsed.slice(1).map(row => ({
+        records = parsed.slice(1).map((row, idx) => ({
+          rowNumber: idx + 2, // Posisi baris di spreadsheet untuk mempermudah perbaikan
           id: String(row[0] || '').trim(),
           nama: String(row[1] || '').trim(),
           lomba: String(row[2] || '').trim(),
@@ -99,10 +99,12 @@ async function loadAllRecords(customSpreadsheetId) {
   // 2. Fallback ke file JSON lokal jika Google Sheets kosong / belum diset
   if (records.length === 0) {
     try {
-      records = require('../data/certificates.json');
+      const localData = require('../data/certificates.json');
+      records = localData.map((item, idx) => ({ ...item, rowNumber: idx + 2 }));
     } catch (e) {
       try {
-        records = require('./data/certificates.json');
+        const localData = require('./data/certificates.json');
+        records = localData.map((item, idx) => ({ ...item, rowNumber: idx + 2 }));
       } catch (e2) {
         records = [];
       }
@@ -130,15 +132,39 @@ module.exports = async (req, res) => {
     const rawId = req.query.id || '';
     const id = String(rawId).trim().toUpperCase();
 
-    // AKSI 1: Ambil seluruh daftar santri untuk Admin Panel
+    const { records, source } = await loadAllRecords(req.query.sheet_id);
+
+    // Hitung kemunculan setiap ID untuk mendeteksi nomor duplikat (Anti-Collision Guard)
+    const idCountMap = {};
+    const duplicateDetailMap = {};
+
+    records.forEach(item => {
+      const normId = item.id.toUpperCase();
+      if (!idCountMap[normId]) {
+        idCountMap[normId] = 1;
+        duplicateDetailMap[normId] = [item];
+      } else {
+        idCountMap[normId]++;
+        duplicateDetailMap[normId].push(item);
+      }
+    });
+
+    const duplicateIds = Object.keys(idCountMap).filter(normId => idCountMap[normId] > 1);
+
+    // AKSI 1: Ambil seluruh daftar santri untuk Admin Panel (Lengkap dengan Informasi Peringatan Duplikat)
     if (action === 'list' || (!id && action !== 'verify')) {
-      const { records, source } = await loadAllRecords(req.query.sheet_id);
       res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
       return res.status(200).json({
         success: true,
         source: source,
         total: records.length,
-        records: records
+        hasDuplicates: duplicateIds.length > 0,
+        duplicateCount: duplicateIds.length,
+        duplicateIds: duplicateIds,
+        records: records.map(item => ({
+          ...item,
+          isDuplicate: duplicateIds.includes(item.id.toUpperCase())
+        }))
       });
     }
 
@@ -151,15 +177,11 @@ module.exports = async (req, res) => {
       });
     }
 
-    const { records } = await loadAllRecords(req.query.sheet_id);
+    const matches = records.filter(item => String(item.id).trim().toUpperCase() === id);
 
-    // Cari ID sertifikat (case-insensitive)
-    const match = records.find(item => String(item.id).trim().toUpperCase() === id);
-
-    // Cache di CDN Vercel selama 60 detik untuk kecepatan
-    res.setHeader('Cache-Control', 's-maxage=30, stale-while-revalidate=120');
-
-    if (!match) {
+    // PENGAMAN 1: Cek apakah nomor sertifikat terdaftar
+    if (matches.length === 0) {
+      res.setHeader('Cache-Control', 's-maxage=30, stale-while-revalidate=120');
       return res.status(200).json({
         success: false,
         status: 'NOT_FOUND',
@@ -168,7 +190,27 @@ module.exports = async (req, res) => {
       });
     }
 
+    // PENGAMAN 2: CEK DUPLIKASI! Jika ditemukan lebih dari 1 santri dengan nomor sertifikat yang sama
+    if (matches.length > 1) {
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      return res.status(200).json({
+        success: false,
+        status: 'DUPLICATE_ERROR',
+        id: id,
+        yayasan: PROFIL_YAYASAN.namaYayasan,
+        lembaga: PROFIL_YAYASAN.lembaga,
+        alamat: PROFIL_YAYASAN.alamat,
+        duplicateCount: matches.length,
+        recipients: matches.map(m => ({ nama: m.nama, lomba: m.lomba, tanggal: m.tanggal, baris: m.rowNumber })),
+        message: `PERINGATAN INTEGRITAS: Nomor registrasi "${id}" ditemukan GANDA pada ${matches.length} penerima berbeda di buku induk yayasan! Dokumen ini ditangguhkan sampai dilakukan perbaikan oleh pengurus yayasan.`
+      });
+    }
+
+    // Validasi Normal (1 Data Unik)
+    const match = matches[0];
     const isAktif = (match.status || 'AKTIF').toUpperCase() === 'AKTIF';
+
+    res.setHeader('Cache-Control', 's-maxage=30, stale-while-revalidate=120');
 
     return res.status(200).json({
       success: true,

@@ -26,6 +26,9 @@
       --accent: #d97706; /* Emas Yayasan */
       --accent-light: #fef3c7;
       --success: #059669;
+      --danger: #dc2626;
+      --danger-bg: #fef2f2;
+      --danger-border: #fca5a5;
       --slate-900: #0f172a;
       --slate-800: #1e293b;
       --slate-700: #334155;
@@ -239,6 +242,56 @@
       margin-top: 2px;
     }
 
+    /* DUPLICATE SECURITY ALERT BANNER */
+    #duplicate-alert-box {
+      background: #fef2f2;
+      border: 2px solid #f87171;
+      border-radius: var(--radius);
+      padding: 18px 22px;
+      margin-bottom: 22px;
+      box-shadow: 0 4px 14px rgba(220, 38, 38, 0.12);
+      animation: pulseAlert 2s infinite ease-in-out;
+    }
+    @keyframes pulseAlert {
+      0%, 100% { border-color: #f87171; }
+      50% { border-color: #dc2626; box-shadow: 0 4px 20px rgba(220, 38, 38, 0.25); }
+    }
+    .alert-content {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+    }
+    .alert-icon {
+      font-size: 28px;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+    .alert-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: #991b1b;
+      margin-bottom: 4px;
+    }
+    .alert-desc {
+      font-size: 12.5px;
+      color: #7f1d1d;
+      line-height: 1.5;
+      margin-bottom: 10px;
+    }
+    .pill-duplicate {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11.5px;
+      font-weight: 800;
+      color: #991b1b;
+      background: #fee2e2;
+      border: 1px solid #fca5a5;
+      padding: 3px 8px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
     /* Action Control Toolbar */
     .toolbar-card {
       background: #ffffff;
@@ -379,6 +432,12 @@
     table.data-table tbody tr:hover {
       background: #f8fafc;
     }
+    table.data-table tbody tr.row-duplicate {
+      background: #fff5f5 !important;
+    }
+    table.data-table tbody tr.row-duplicate:hover {
+      background: #fee2e2 !important;
+    }
     table.data-table td {
       padding: 14px 18px;
       font-size: 13px;
@@ -396,6 +455,12 @@
       border-radius: 6px;
       border: 1px solid #a7f3d0;
       white-space: nowrap;
+      display: inline-block;
+    }
+    .id-badge.badge-dup {
+      color: #991b1b;
+      background: #fee2e2;
+      border-color: #fca5a5;
     }
     .student-name {
       font-size: 13.5px;
@@ -588,7 +653,7 @@
       background: #ffffff;
       border-radius: 20px;
       width: 100%;
-      max-width: 520px;
+      max-width: 540px;
       padding: 28px;
       box-shadow: var(--shadow-lg);
       position: relative;
@@ -718,17 +783,34 @@
         </div>
       </div>
       <div class="stat-card">
-        <div class="stat-icon" style="background: #e0f2fe; color: #0369a1;">🏷️</div>
+        <div class="stat-icon" id="stat-active-card-icon" style="background: #e0f2fe; color: #0369a1;">🏷️</div>
         <div class="stat-info">
           <div class="stat-num" id="stat-active">0</div>
           <div class="stat-label">Sertifikat Sah & Aktif</div>
         </div>
       </div>
       <div class="stat-card">
-        <div class="stat-icon" style="background: #f1f5f9; color: #475569;">⏱️</div>
+        <div class="stat-icon" id="stat-integrity-icon" style="background: #ecfdf5; color: #059669;">🛡️</div>
         <div class="stat-info">
-          <div class="stat-num" style="font-size: 15px;" id="stat-last-sync">-</div>
-          <div class="stat-label">Sinkronisasi Terakhir</div>
+          <div class="stat-num" style="font-size: 16px; color: #059669;" id="stat-integrity">Aman (100% Unik)</div>
+          <div class="stat-label">Integritas Nomor Sertifikat</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PENGAMAN DUPLIKASI: ALERT BANNER -->
+    <div id="duplicate-alert-box" style="display: none;">
+      <div class="alert-content">
+        <div class="alert-icon">🚨</div>
+        <div style="flex: 1;">
+          <h3 class="alert-title">PERINGATAN KEAMANAN: Ditemukan Nomor Sertifikat Ganda (Duplikat)!</h3>
+          <p class="alert-desc">
+            Sistem mendeteksi adanya nomor sertifikat yang dipakai lebih dari 1 santri pada Google Sheets Anda. Nomor sertifikat <b>wajib unik</b> untuk mencegah pemalsuan dan bentrok data saat di-scan:
+          </p>
+          <div id="duplicate-list-pills" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px;"></div>
+          <div style="font-size: 12px; color: #991b1b; font-weight: 600;">
+            👉 <b>Tindakan:</b> Buka Google Sheets Anda dan ubah nomor sertifikat santri terkait agar berbeda. Setelah itu klik tombol "🔄 Sinkronkan Google Sheets".
+          </div>
         </div>
       </div>
     </div>
@@ -796,17 +878,15 @@
   </main>
 </div>
 
-<!-- ================= 3. MODAL PENGATURAN SPREADSHEET ================= -->
+<!-- ================= 3. MODAL PENGATURAN SPREADSHEET & PANDUAN PENGAMAN ================= -->
 <div class="modal-overlay" id="modal-settings">
   <div class="modal-card">
     <div class="modal-header">
-      <h3>⚙️ Pengaturan Sumber Data Google Sheets</h3>
+      <h3>⚙️ Pengaturan Sumber Data & Pengaman</h3>
       <button type="button" class="btn-close-modal" onclick="closeSettingsModal()">✕</button>
     </div>
-    <div style="font-size: 13px; color: var(--slate-600); margin-bottom: 16px; line-height: 1.5;">
-      Masukkan <b>Spreadsheet ID</b> Google Sheets yayasan Anda. Data santri di tabel akan otomatis ditarik langsung dari sheet ini.
-    </div>
-    <div style="margin-bottom: 16px;">
+    
+    <div style="margin-bottom: 20px;">
       <label style="display: block; font-size: 11.5px; font-weight: 700; color: var(--slate-700); margin-bottom: 6px; text-transform: uppercase;">
         Spreadsheet ID atau Link Google Sheets:
       </label>
@@ -820,6 +900,25 @@
         💡 Pastikan Google Sheets Anda diset <b>"Siapa saja yang memiliki link dapat melihat (Viewer)"</b>.
       </div>
     </div>
+
+    <!-- PANDUAN KUNCI DUPLIKASI DI GOOGLE SHEETS -->
+    <div style="background: #fffbeb; border: 1.5px solid #fde68a; border-radius: 12px; padding: 14px 16px; margin-bottom: 20px;">
+      <div style="font-size: 13px; font-weight: 800; color: #92400e; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+        🛡️ Tips Kunci Nomor di Google Sheets (Otomatis Tolak Duplikat)
+      </div>
+      <div style="font-size: 12px; color: #78350f; line-height: 1.5;">
+        Agar tidak ada nomor kembar yang terketik di Google Sheets:
+        <ol style="margin-left: 18px; margin-top: 6px;">
+          <li>Blok <b>Kolom A</b> di Google Sheets Anda.</li>
+          <li>Klik menu <b>Data</b> ➔ <b>Validasi data (Data Validation)</b>.</li>
+          <li>Pilih kriteria <b>Formula khusus (Custom formula)</b>.</li>
+          <li>Ketik rumus: <code>=COUNTIF(A:A, A1)&lt;=1</code></li>
+          <li>Pilih <b>Tolak masukan (Reject input)</b>. Selesai!</li>
+        </ol>
+        <i>Google Sheets akan langsung menolak dan melarang jika ada yang memasukkan nomor yang sama.</i>
+      </div>
+    </div>
+
     <div style="display: flex; gap: 10px; justify-content: flex-end;">
       <button type="button" class="btn-tool" onclick="closeSettingsModal()">Batal</button>
       <button type="button" class="btn-tool sync" onclick="saveSheetSettings()">Simpan & Muat Ulang</button>
@@ -827,7 +926,7 @@
   </div>
 </div>
 
-<!-- ================= 4. MODAL INPUT CEPAT SATU SANTRI ================= -->
+<!-- ================= 4. MODAL INPUT CEPAT SATU SANTRI (LENGKAP DENGAN ANTI-COLLISION) ================= -->
 <div class="modal-overlay" id="modal-manual-add">
   <div class="modal-card">
     <div class="modal-header">
@@ -835,12 +934,25 @@
       <button type="button" class="btn-close-modal" onclick="closeManualAddModal()">✕</button>
     </div>
     <div style="font-size: 12.5px; color: var(--slate-600); margin-bottom: 16px;">
-      Gunakan form ini untuk membuat QR Code langsung tanpa harus membuka spreadsheet. Anda juga bisa menyalin barisnya ke Google Sheets.
+      Gunakan form ini untuk membuat QR Code langsung. Sistem otomatis memastikan nomor yang Anda buat <b>belum pernah dipakai</b>.
     </div>
-    <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
+    
+    <div style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 20px;">
       <div>
-        <label style="font-size: 11px; font-weight: 700; color: var(--slate-600); text-transform: uppercase; display: block; margin-bottom: 4px;">Nomor Sertifikat (ID):</label>
-        <input type="text" id="m-id" value="SIBS-2026-0006" style="width: 100%; padding: 10px; border: 1.5px solid var(--slate-200); border-radius: 8px; font-size: 13px;" />
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+          <label style="font-size: 11px; font-weight: 700; color: var(--slate-600); text-transform: uppercase;">Nomor Sertifikat (ID):</label>
+          <button type="button" style="background: none; border: none; font-size: 11px; font-weight: 700; color: var(--primary); cursor: pointer; text-decoration: underline;" onclick="applyNextUniqueId()">
+            + Ambil Nomor Baru Otomatis
+          </button>
+        </div>
+        <input 
+          type="text" 
+          id="m-id" 
+          style="width: 100%; padding: 11px; border: 1.5px solid var(--slate-200); border-radius: 8px; font-size: 13px; font-family: 'JetBrains Mono', monospace; font-weight: 700;" 
+          oninput="validateManualId()" 
+        />
+        <!-- Peringatan Duplikat Real-time -->
+        <div id="m-id-warn" style="display: none; font-size: 11.5px; color: #b91c1c; font-weight: 700; margin-top: 6px; background: #fef2f2; padding: 7px 10px; border-radius: 6px; border: 1px solid #fecaca; line-height: 1.4;"></div>
       </div>
       <div>
         <label style="font-size: 11px; font-weight: 700; color: var(--slate-600); text-transform: uppercase; display: block; margin-bottom: 4px;">Nama Lengkap Santri:</label>
@@ -859,8 +971,9 @@
         <input type="text" id="m-tanggal" value="23 Oktober 2026" style="width: 100%; padding: 10px; border: 1.5px solid var(--slate-200); border-radius: 8px; font-size: 13px;" />
       </div>
     </div>
+
     <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-      <button type="button" class="btn-tool sync" style="flex: 1;" onclick="submitManualRecord()">
+      <button type="button" id="btn-submit-manual" class="btn-tool sync" style="flex: 1;" onclick="submitManualRecord()">
         ⬇️ Unduh QR Santri Ini
       </button>
       <button type="button" class="btn-tool" onclick="copyManualRow()">
@@ -892,6 +1005,7 @@
   const CORRECT_PIN = 'syarief2026';
   let CERTIFICATES_DATA = [];
   let FILTERED_DATA = [];
+  let DUPLICATE_IDS = [];
 
   // Pre-load Logo Yayasan Resmi untuk dipasang di tengah QR
   const LOGO_IMG = new Image();
@@ -960,6 +1074,7 @@
       if (json.success && Array.isArray(json.records)) {
         CERTIFICATES_DATA = json.records;
         FILTERED_DATA = [...CERTIFICATES_DATA];
+        DUPLICATE_IDS = json.duplicateIds || [];
         
         // Update Stats
         document.getElementById('stat-total').textContent = CERTIFICATES_DATA.length;
@@ -967,8 +1082,24 @@
         document.getElementById('stat-active').textContent = activeCount;
         document.getElementById('stat-source').textContent = json.source === 'google_sheets' ? 'Google Sheets (Live)' : 'Database SIBS';
         
-        const now = new Date();
-        document.getElementById('stat-last-sync').textContent = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0') + ' WIB';
+        // PENGAMAN DUPLIKASI: Perbarui status integritas di overview card
+        const integEl = document.getElementById('stat-integrity');
+        const integIcon = document.getElementById('stat-integrity-icon');
+        if (DUPLICATE_IDS.length > 0) {
+          integEl.textContent = `⚠️ ${DUPLICATE_IDS.length} Ganda!`;
+          integEl.style.color = '#dc2626';
+          integIcon.style.background = '#fee2e2';
+          integIcon.style.color = '#dc2626';
+          integIcon.textContent = '⚠️';
+          showDuplicateBanner(DUPLICATE_IDS);
+        } else {
+          integEl.textContent = 'Aman (100% Unik)';
+          integEl.style.color = '#059669';
+          integIcon.style.background = '#ecfdf5';
+          integIcon.style.color = '#059669';
+          integIcon.textContent = '🛡️';
+          hideDuplicateBanner();
+        }
 
         renderTable();
       } else {
@@ -989,11 +1120,30 @@
     }
   }
 
+  // ================= PENGAMAN BANNER DUPLIKAT =================
+  function showDuplicateBanner(duplicateIds) {
+    const alertBox = document.getElementById('duplicate-alert-box');
+    const pillsBox = document.getElementById('duplicate-list-pills');
+    pillsBox.innerHTML = '';
+
+    duplicateIds.forEach(id => {
+      const matchStudents = CERTIFICATES_DATA.filter(c => c.id.toUpperCase() === id.toUpperCase());
+      const names = matchStudents.map(m => m.nama).join(' & ');
+      const span = document.createElement('span');
+      span.className = 'pill-duplicate';
+      span.innerHTML = `⚠️ <b>${escapeHtml(id)}</b> (${escapeHtml(names)})`;
+      pillsBox.appendChild(span);
+    });
+
+    alertBox.style.display = 'block';
+  }
+
+  function hideDuplicateBanner() {
+    const alertBox = document.getElementById('duplicate-alert-box');
+    if (alertBox) alertBox.style.display = 'none';
+  }
+
   // ================= CORE FUNCTION: GENERATE QR DENGAN LOGO DI TENGAH =================
-  /**
-   * Menggambar QR Code pada Canvas dengan Logo Yayasan di Tengahnya
-   * Menggunakan Error Correction Level H (30%) sehingga 100% aman dan cepat di-scan.
-   */
   function generateQrCanvasWithLogo(textUrl, size = 800, withLogo = true, qrColor = '#123d2f') {
     return new Promise((resolve) => {
       const tempDiv = document.createElement('div');
@@ -1012,7 +1162,6 @@
         correctLevel: QRCode.CorrectLevel.H
       });
 
-      // Tunggu hingga QRCode selesai dirender ke DOM
       const checkInterval = setInterval(() => {
         const qrCanvas = tempDiv.querySelector('canvas');
         const qrImg = tempDiv.querySelector('img');
@@ -1029,15 +1178,14 @@
           // 1. Gambar Base QR Code
           ctx.drawImage(sourceElement, 0, 0, size, size);
 
-          // 2. Gambar Badge Logo di Tengah (Jika diaktifkan)
+          // 2. Gambar Badge Logo di Tengah
           if (withLogo && (isLogoLoaded || (LOGO_IMG && LOGO_IMG.naturalWidth > 0))) {
-            const badgeScale = 0.26; // 26% dari lebar QR
+            const badgeScale = 0.26;
             const badgeSize = Math.round(size * badgeScale);
             const badgeX = Math.round((size - badgeSize) / 2);
             const badgeY = Math.round((size - badgeSize) / 2);
             const radius = Math.round(badgeSize * 0.22);
 
-            // Background badge putih dengan bayangan lembut
             ctx.save();
             ctx.beginPath();
             drawRoundRect(ctx, badgeX, badgeY, badgeSize, badgeSize, radius);
@@ -1049,7 +1197,6 @@
             ctx.fill();
             ctx.restore();
 
-            // Border badge warna hijau emerald SIBS
             ctx.save();
             ctx.beginPath();
             drawRoundRect(ctx, badgeX, badgeY, badgeSize, badgeSize, radius);
@@ -1058,7 +1205,6 @@
             ctx.stroke();
             ctx.restore();
 
-            // Gambar logo di dalam badge putih
             const pad = Math.round(badgeSize * 0.10);
             const logoW = badgeSize - pad * 2;
             const logoH = badgeSize - pad * 2;
@@ -1072,7 +1218,6 @@
     });
   }
 
-  // Helper gambar rounded rectangle di canvas
   function drawRoundRect(ctx, x, y, width, height, radius) {
     if (ctx.roundRect) {
       ctx.roundRect(x, y, width, height, radius);
@@ -1111,13 +1256,26 @@
       const tr = document.createElement('tr');
       const verifyUrl = window.location.origin + '/verify/' + encodeURIComponent(item.id);
       const isAktif = (item.status || 'AKTIF').toUpperCase() === 'AKTIF';
+      const isDuplicate = item.isDuplicate || DUPLICATE_IDS.includes(item.id.toUpperCase());
+
+      if (isDuplicate) {
+        tr.className = 'row-duplicate';
+      }
+
+      const idBadgeHtml = isDuplicate
+        ? `<span class="id-badge badge-dup" title="Nomor ini ganda di Google Sheets!">⚠️ ${escapeHtml(item.id)} (GANDA)</span>`
+        : `<span class="id-badge">${escapeHtml(item.id)}</span>`;
+
+      const statusSubText = isDuplicate
+        ? `<span style="font-size: 11px; color: #dc2626; font-weight: 800;">⚠️ DUPLIKAT (Baris ${item.rowNumber || '-'})</span>`
+        : `<span style="font-size: 11px; color: #15803d; font-weight: 600;">${isAktif ? '● Terdaftar Sah' : 'Dicabut'}</span>`;
 
       tr.innerHTML = `
         <td style="color: var(--slate-500); font-weight: 600;">${index + 1}</td>
-        <td><span class="id-badge">${escapeHtml(item.id)}</span></td>
+        <td>${idBadgeHtml}</td>
         <td>
           <span class="student-name">${escapeHtml(item.nama)}</span>
-          <span style="font-size: 11px; color: #15803d; font-weight: 600;">${isAktif ? '● Terdaftar Sah' : 'Dicabut'}</span>
+          ${statusSubText}
         </td>
         <td style="color: var(--slate-700); font-weight: 500;">${escapeHtml(item.lomba)}</td>
         <td><span class="badge-predikat">${escapeHtml(item.predikat || 'Peserta')}</span></td>
@@ -1170,14 +1328,17 @@
     renderTable();
   }
 
-  // ================= DOWNLOAD SINGLE PURE QR CODE (HIGH-RES DENGAN LOGO DI TENGAH) =================
+  // ================= DOWNLOAD SINGLE PURE QR CODE =================
   async function downloadSinglePureQr(id, nama) {
+    if (DUPLICATE_IDS.includes(id.toUpperCase())) {
+      const proceed = confirm(`⚠️ PERINGATAN: Nomor sertifikat "${id}" terdeteksi GANDA (duplikat) di Google Sheets Anda!\n\nDisarankan untuk memperbaiki nomor ini terlebih dahulu agar sertifikat unik. Apakah Anda tetap ingin mengunduh?`);
+      if (!proceed) return;
+    }
+
     const verifyUrl = window.location.origin + '/verify/' + encodeURIComponent(id);
     const withLogo = document.getElementById('toggle-center-logo').checked;
 
-    // Render Canvas High-Res 800x800 dengan Logo di Tengah
     const canvas = await generateQrCanvasWithLogo(verifyUrl, 800, withLogo);
-
     const cleanName = (nama || 'Santri').replace(/[^a-zA-Z0-9\s]/g, '').trim().replace(/\s+/g, '-');
     const filename = `QR-${id}-${cleanName}.png`;
     
@@ -1187,25 +1348,28 @@
     link.click();
   }
 
-  // ================= DOWNLOAD SINGLE STIKER TEMPEL (PNG) =================
+  // ================= DOWNLOAD SINGLE STIKER TEMPEL =================
   async function downloadSingleSticker(id, nama) {
+    if (DUPLICATE_IDS.includes(id.toUpperCase())) {
+      const proceed = confirm(`⚠️ PERINGATAN: Nomor sertifikat "${id}" terdeteksi GANDA di Google Sheets!\n\nApakah Anda tetap ingin mengunduh stiker ini?`);
+      if (!proceed) return;
+    }
+
     const verifyUrl = window.location.origin + '/verify/' + encodeURIComponent(id);
     const withLogo = document.getElementById('toggle-center-logo').checked;
     
-    // Set data ke hidden sticker element
     document.getElementById('stk-id-txt').textContent = id;
     document.getElementById('stk-nama-txt').textContent = nama;
     const qrSlot = document.getElementById('stk-qr-box');
     qrSlot.innerHTML = '';
 
-    // Render QR dengan Logo di tengah untuk stiker
     const qrCanvas = await generateQrCanvasWithLogo(verifyUrl, 400, withLogo);
     qrSlot.appendChild(qrCanvas);
 
     setTimeout(() => {
       const badgeEl = document.getElementById('sticker-render-box');
       html2canvas(badgeEl, {
-        scale: 3, // High Resolution 3x
+        scale: 3,
         useCORS: true,
         backgroundColor: '#ffffff'
       }).then(canvas => {
@@ -1218,15 +1382,20 @@
     }, 150);
   }
 
-  // ================= BATCH DOWNLOAD SEMUA QR (FILE ZIP DENGAN LOGO DI TENGAH) =================
+  // ================= BATCH DOWNLOAD SEMUA QR (ZIP) =================
   async function downloadAllQrZip() {
     if (CERTIFICATES_DATA.length === 0) {
       alert('Belum ada data santri untuk diunduh.');
       return;
     }
 
+    if (DUPLICATE_IDS.length > 0) {
+      const proceed = confirm(`⚠️ PERINGATAN KEAMANAN: Ditemukan ${DUPLICATE_IDS.length} nomor sertifikat ganda di Google Sheets Anda!\n\nSangat disarankan untuk memperbaiki nomor duplikat sebelum mencetak massal. Apakah Anda yakin ingin tetap mengunduh ZIP?`);
+      if (!proceed) return;
+    }
+
     const withLogo = document.getElementById('toggle-center-logo').checked;
-    const confirmDownload = confirm(`Apakah Anda ingin mengunduh seluruh ${CERTIFICATES_DATA.length} QR Code santri (lengkap dengan logo di tengah) dalam 1 file ZIP?`);
+    const confirmDownload = confirm(`Unduh seluruh ${CERTIFICATES_DATA.length} QR Code santri dalam 1 file ZIP?`);
     if (!confirmDownload) return;
 
     const zip = new JSZip();
@@ -1263,7 +1432,7 @@
     });
   }
 
-  // ================= CETAK LEMBAR STIKER A4 (PRINT SHEET DENGAN LOGO DI TENGAH) =================
+  // ================= CETAK LEMBAR STIKER A4 =================
   async function openPrintPreview() {
     const gridContainer = document.getElementById('a4-grid-container');
     const withLogo = document.getElementById('toggle-center-logo').checked;
@@ -1312,28 +1481,93 @@
     loadCertificatesData();
   }
 
-  // ================= MODAL MANUAL INPUT =================
+  // ================= MODAL MANUAL INPUT & ANTI-COLLISION GUARD =================
+  function calculateNextUniqueId() {
+    let maxNum = 0;
+    CERTIFICATES_DATA.forEach(item => {
+      const m = String(item.id).match(/(\d+)$/);
+      if (m) {
+        const n = parseInt(m[1], 10);
+        if (n > maxNum) maxNum = n;
+      }
+    });
+    return 'SIBS-2026-' + String(maxNum + 1).padStart(4, '0');
+  }
+
+  function applyNextUniqueId() {
+    document.getElementById('m-id').value = calculateNextUniqueId();
+    validateManualId();
+  }
+
+  function validateManualId() {
+    const typedId = document.getElementById('m-id').value.trim().toUpperCase();
+    const warnEl = document.getElementById('m-id-warn');
+    const submitBtn = document.getElementById('btn-submit-manual');
+    const inpEl = document.getElementById('m-id');
+
+    if (!typedId) {
+      warnEl.style.display = 'none';
+      inpEl.style.borderColor = '#cbd5e1';
+      return false;
+    }
+
+    const existing = CERTIFICATES_DATA.find(c => c.id.toUpperCase() === typedId);
+    if (existing) {
+      warnEl.style.display = 'block';
+      warnEl.innerHTML = `❌ Nomor <b>${typedId}</b> SUDAH DIGUNAKAN oleh: <b>${escapeHtml(existing.nama)}</b> (${escapeHtml(existing.lomba)})! Nomor sertifikat wajib unik.`;
+      inpEl.style.borderColor = '#dc2626';
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.style.opacity = '0.5';
+        submitBtn.style.cursor = 'not-allowed';
+      }
+      return false;
+    } else {
+      warnEl.style.display = 'none';
+      inpEl.style.borderColor = '#10b981';
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.style.opacity = '1';
+        submitBtn.style.cursor = 'pointer';
+      }
+      return true;
+    }
+  }
+
   function openManualAddModal() {
-    const nextNum = CERTIFICATES_DATA.length + 1;
-    document.getElementById('m-id').value = 'SIBS-2026-' + String(nextNum).padStart(4, '0');
+    applyNextUniqueId();
     document.getElementById('m-nama').value = '';
     document.getElementById('modal-manual-add').style.display = 'flex';
     document.getElementById('m-nama').focus();
   }
+
   function closeManualAddModal() {
     document.getElementById('modal-manual-add').style.display = 'none';
   }
+
   function submitManualRecord() {
+    const isUnique = validateManualId();
+    if (!isUnique) {
+      alert('❌ Nomor sertifikat bentrok/sudah digunakan! Harap ganti nomor atau klik "Ambil Nomor Baru Otomatis".');
+      return;
+    }
     const id = document.getElementById('m-id').value.trim().toUpperCase();
     const nama = document.getElementById('m-nama').value.trim();
-    if (!id || !nama) {
-      alert('Nomor Sertifikat dan Nama Santri wajib diisi.');
+    if (!nama) {
+      alert('Nama santri wajib diisi.');
+      document.getElementById('m-nama').focus();
       return;
     }
     downloadSinglePureQr(id, nama);
     closeManualAddModal();
   }
+
   function copyManualRow() {
+    const isUnique = validateManualId();
+    if (!isUnique) {
+      alert('❌ Nomor sertifikat bentrok! Silakan perbaiki nomor sertifikat terlebih dahulu.');
+      return;
+    }
     const id = document.getElementById('m-id').value.trim().toUpperCase();
     const nama = document.getElementById('m-nama').value.trim();
     const lomba = document.getElementById('m-lomba').value.trim();

@@ -524,7 +524,38 @@
           renderError(targetId);
         });
 
-      function renderVerification(resp, queryId) {
+        if (resp && resp.status === 'DUPLICATE_ERROR') {
+          resultBox.innerHTML = `
+            <div class="result-card">
+              <div class="status-banner revoked" style="background: #fff1f2; border-color: #fecdd3;">
+                <div class="badge-icon" style="background: #ffe4e6; color: #be123c;">⚠️</div>
+                <div class="status-text">
+                  <h2 style="color: #9f1239;">Peringatan Integritas: Nomor Sertifikat Ganda</h2>
+                  <p style="color: #be123c;">Nomor registrasi <b>${esc(queryId)}</b> terdeteksi ganda (duplikat) pada lebih dari 1 santri di database yayasan.</p>
+                </div>
+              </div>
+              <div class="cert-body">
+                <div class="inst-header-box" style="text-align: center; padding: 18px 14px; margin-bottom: 18px;">
+                  <img src="/logo-sibs.png" alt="Logo SIBS" style="width: 58px; height: 58px; object-fit: contain; margin-bottom: 6px; display: inline-block;" />
+                  <h3 style="font-size: 15px; font-weight: 800; color: #123d2f;">SYARIF INTERNASIONAL BOARDING SCHOOL</h3>
+                  <p style="font-size: 11px; color: #64748b;">Dusun Bunduh RT 09 RW 03, Desa Bataan, Kec. Tenggarang, Kab. Bondowoso</p>
+                </div>
+                <div style="background: #fffbeb; border: 1.5px solid #fde68a; border-radius: 12px; padding: 16px; margin-bottom: 20px;">
+                  <h4 style="font-size: 13px; font-weight: 800; color: #92400e; margin-bottom: 6px;">🔒 Pengamanan Keaslian Dokumen</h4>
+                  <p style="font-size: 12.5px; color: #78350f; line-height: 1.5;">
+                    Untuk menjamin keaslian dan legalitas, setiap sertifikat Syarif Internasional Boarding School wajib memiliki nomor unik tersendiri. Karena nomor ini tercatat ganda pada sistem, keabsahan dokumen ditangguhkan untuk verifikasi manual oleh pimpinan yayasan.
+                  </p>
+                </div>
+                <div class="actions-grid">
+                  <a href="/" class="btn-act primary">🔍 Cek Nomor Lain</a>
+                  <a href="https://wa.me/?text=${encodeURIComponent('Halo Admin SIBS, mohon bantuan klarifikasi nomor sertifikat ganda ' + queryId)}" target="_blank" class="btn-act wa">📲 Hubungi Yayasan</a>
+                </div>
+              </div>
+            </div>
+          `;
+          return;
+        }
+
         if (!resp || !resp.success || resp.status === 'NOT_FOUND') {
           resultBox.innerHTML = `
             <div class="result-card">
