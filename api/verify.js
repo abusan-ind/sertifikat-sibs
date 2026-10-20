@@ -65,6 +65,52 @@ function parseCsv(csvText) {
 }
 
 /**
+ * Parser URL Google Drive untuk Preview & Download Langsung
+ */
+function parseDriveLinks(rawUrl) {
+  if (!rawUrl || typeof rawUrl !== 'string') return null;
+  const trimmed = rawUrl.trim();
+  if (!trimmed) return null;
+
+  const driveRegex = /https?:\/\/(?:drive|docs)\.google\.com\/(?:file\/d\/|open\?id=|uc\?id=|document\/d\/|presentation\/d\/)([a-zA-Z0-9_-]+)/i;
+  const match = trimmed.match(driveRegex);
+  if (match && match[1]) {
+    const fileId = match[1];
+    return {
+      hasFile: true,
+      isGoogleDrive: true,
+      fileId: fileId,
+      previewUrl: `https://drive.google.com/file/d/${fileId}/preview`,
+      downloadUrl: `https://drive.google.com/uc?export=download&id=${fileId}`,
+      viewUrl: `https://drive.google.com/file/d/${fileId}/view?usp=sharing`,
+      originalUrl: trimmed
+    };
+  }
+
+  // Direct / generic file link (PDF / Image / Cloudinary / dll)
+  return {
+    hasFile: true,
+    isGoogleDrive: false,
+    fileId: null,
+    previewUrl: trimmed,
+    downloadUrl: trimmed,
+    viewUrl: trimmed,
+    originalUrl: trimmed
+  };
+}
+
+/**
+ * Normalisasi nama untuk pencarian mirip (case-insensitive & toleran spasi)
+ */
+function normalizeName(str) {
+  return String(str || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+/**
  * Ambil seluruh records dari Google Sheets atau Fallback Lokal
  */
 async function loadAllRecords(customSpreadsheetId) {
@@ -82,13 +128,14 @@ async function loadAllRecords(customSpreadsheetId) {
         const parsed = parseCsv(csvRes.data);
         // Lewati baris header pertama
         records = parsed.slice(1).map((row, idx) => ({
-          rowNumber: idx + 2, // Posisi baris di spreadsheet untuk mempermudah perbaikan
+          rowNumber: idx + 2,
           id: String(row[0] || '').trim(),
           nama: String(row[1] || '').trim(),
           lomba: String(row[2] || '').trim(),
           predikat: String(row[3] || 'Peserta').trim(),
           tanggal: String(row[4] || '').trim(),
-          status: String(row[5] || 'AKTIF').trim().toUpperCase()
+          status: String(row[5] || 'AKTIF').trim().toUpperCase(),
+          fileUrl: String(row[6] || '').trim() // Kolom G: Link File Sertifikat
         })).filter(item => item.id && item.nama);
       }
     } catch (err) {
@@ -100,11 +147,11 @@ async function loadAllRecords(customSpreadsheetId) {
   if (records.length === 0) {
     try {
       const localData = require('../data/certificates.json');
-      records = localData.map((item, idx) => ({ ...item, rowNumber: idx + 2 }));
+      records = localData.map((item, idx) => ({ ...item, fileUrl: item.fileUrl || '', rowNumber: idx + 2 }));
     } catch (e) {
       try {
         const localData = require('./data/certificates.json');
-        records = localData.map((item, idx) => ({ ...item, rowNumber: idx + 2 }));
+        records = localData.map((item, idx) => ({ ...item, fileUrl: item.fileUrl || '', rowNumber: idx + 2 }));
       } catch (e2) {
         records = [];
       }
@@ -112,6 +159,23 @@ async function loadAllRecords(customSpreadsheetId) {
   }
 
   return { records, source: spreadsheetId ? 'google_sheets' : 'local_database' };
+}
+
+/**
+ * Helper format satu record menjadi response data
+ */
+function formatRecordData(match) {
+  const isAktif = (match.status || 'AKTIF').toUpperCase() === 'AKTIF';
+  return {
+    id: match.id,
+    nama: match.nama,
+    lomba: match.lomba,
+    predikat: match.predikat || 'Peserta',
+    tanggal: match.tanggal,
+    status: match.status || 'AKTIF',
+    isValid: isAktif,
+    file: parseDriveLinks(match.fileUrl)
+  };
 }
 
 /**
@@ -131,6 +195,9 @@ module.exports = async (req, res) => {
     const action = (req.query.action || '').trim().toLowerCase();
     const rawId = req.query.id || '';
     const id = String(rawId).trim().toUpperCase();
+    const rawNama = req.query.nama || req.query.name || '';
+    const namaQuery = String(rawNama).trim();
+    const generalQ = String(req.query.q || '').trim();
 
     const { records, source } = await loadAllRecords(req.query.sheet_id);
 
@@ -151,8 +218,8 @@ module.exports = async (req, res) => {
 
     const duplicateIds = Object.keys(idCountMap).filter(normId => idCountMap[normId] > 1);
 
-    // AKSI 1: Ambil seluruh daftar santri untuk Admin Panel (Lengkap dengan Informasi Peringatan Duplikat)
-    if (action === 'list' || (!id && action !== 'verify')) {
+    // AKSI 1: Ambil seluruh daftar santri untuk Admin Panel
+    if (action === 'list' || (!id && !namaQuery && !generalQ && action !== 'verify')) {
       res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
       return res.status(200).json({
         success: true,
@@ -163,50 +230,119 @@ module.exports = async (req, res) => {
         duplicateIds: duplicateIds,
         records: records.map(item => ({
           ...item,
-          isDuplicate: duplicateIds.includes(item.id.toUpperCase())
+          isDuplicate: duplicateIds.includes(item.id.toUpperCase()),
+          file: parseDriveLinks(item.fileUrl)
         }))
       });
     }
 
-    // AKSI 2: Verifikasi nomor sertifikat tunggal
-    if (!id) {
-      return res.status(400).json({
-        success: false,
-        status: 'EMPTY_ID',
-        message: 'Parameter ID sertifikat wajib disertakan.'
+    // AKSI 2: Pencarian Berdasarkan NAMA
+    const targetNama = namaQuery || (!id && generalQ ? generalQ : '');
+    if (targetNama && !id) {
+      const normTarget = normalizeName(targetNama);
+      const matches = records.filter(item => normalizeName(item.nama) === normTarget);
+
+      if (matches.length === 0) {
+        res.setHeader('Cache-Control', 's-maxage=30, stale-while-revalidate=120');
+        return res.status(200).json({
+          success: false,
+          status: 'NOT_FOUND',
+          searchType: 'NAME',
+          query: targetNama,
+          message: `Sertifikat atas nama "${targetNama}" tidak ditemukan dalam buku induk resmi Syarief Internasional Boarding School. Pastikan ejaan nama lengkap telah sesuai.`
+        });
+      }
+
+      // Jika ditemukan lebih dari 1 sertifikat untuk nama ini (misal ikut beberapa lomba)
+      if (matches.length > 1) {
+        res.setHeader('Cache-Control', 's-maxage=30, stale-while-revalidate=120');
+        return res.status(200).json({
+          success: true,
+          status: 'MULTIPLE_MATCHES',
+          searchType: 'NAME',
+          totalMatches: matches.length,
+          query: targetNama,
+          nama: matches[0].nama,
+          yayasan: PROFIL_YAYASAN.namaYayasan,
+          lembaga: PROFIL_YAYASAN.lembaga,
+          alamat: PROFIL_YAYASAN.alamat,
+          penandatangan: {
+            nama: PROFIL_YAYASAN.penandatangan,
+            nik: PROFIL_YAYASAN.nik,
+            jabatan: PROFIL_YAYASAN.jabatan
+          },
+          records: matches.map(formatRecordData),
+          message: `Ditemukan ${matches.length} sertifikat atas nama "${matches[0].nama}". Silakan pilih kegiatan/lomba yang ingin diverifikasi.`
+        });
+      }
+
+      // Tepat 1 sertifikat ditemukan
+      const match = matches[0];
+      const isAktif = (match.status || 'AKTIF').toUpperCase() === 'AKTIF';
+      res.setHeader('Cache-Control', 's-maxage=30, stale-while-revalidate=120');
+
+      return res.status(200).json({
+        success: true,
+        status: isAktif ? 'VALID' : 'REVOKED',
+        searchType: 'NAME',
+        totalMatches: 1,
+        yayasan: PROFIL_YAYASAN.namaYayasan,
+        lembaga: PROFIL_YAYASAN.lembaga,
+        alamat: PROFIL_YAYASAN.alamat,
+        penandatangan: {
+          nama: PROFIL_YAYASAN.penandatangan,
+          nik: PROFIL_YAYASAN.nik,
+          jabatan: PROFIL_YAYASAN.jabatan
+        },
+        data: formatRecordData(match),
+        message: isAktif 
+          ? 'Sertifikat resmi terverifikasi dan sah terdaftar pada Syarief Internasional Boarding School Bondowoso.' 
+          : 'Sertifikat telah dicabut atau dinyatakan tidak berlaku oleh pimpinan yayasan.'
       });
     }
 
-    const matches = records.filter(item => String(item.id).trim().toUpperCase() === id);
+    // AKSI 3: Verifikasi Berdasarkan NOMOR ID SERTIFIKAT
+    const searchId = id || (generalQ ? generalQ.toUpperCase() : '');
+    if (!searchId) {
+      return res.status(400).json({
+        success: false,
+        status: 'EMPTY_QUERY',
+        message: 'Parameter nomor sertifikat atau nama santri wajib disertakan.'
+      });
+    }
 
-    // PENGAMAN 1: Cek apakah nomor sertifikat terdaftar
+    const matches = records.filter(item => String(item.id).trim().toUpperCase() === searchId);
+
+    // Nomor tidak terdaftar
     if (matches.length === 0) {
       res.setHeader('Cache-Control', 's-maxage=30, stale-while-revalidate=120');
       return res.status(200).json({
         success: false,
         status: 'NOT_FOUND',
-        id: id,
+        searchType: 'ID',
+        id: searchId,
         message: 'Nomor sertifikat tidak ditemukan dalam buku induk resmi Syarief Internasional Boarding School.'
       });
     }
 
-    // PENGAMAN 2: CEK DUPLIKASI! Jika ditemukan lebih dari 1 santri dengan nomor sertifikat yang sama
+    // Cek Duplikasi Nomor
     if (matches.length > 1) {
       res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
       return res.status(200).json({
         success: false,
         status: 'DUPLICATE_ERROR',
-        id: id,
+        searchType: 'ID',
+        id: searchId,
         yayasan: PROFIL_YAYASAN.namaYayasan,
         lembaga: PROFIL_YAYASAN.lembaga,
         alamat: PROFIL_YAYASAN.alamat,
         duplicateCount: matches.length,
         recipients: matches.map(m => ({ nama: m.nama, lomba: m.lomba, tanggal: m.tanggal, baris: m.rowNumber })),
-        message: `PERINGATAN INTEGRITAS: Nomor registrasi "${id}" ditemukan GANDA pada ${matches.length} penerima berbeda di buku induk yayasan! Dokumen ini ditangguhkan sampai dilakukan perbaikan oleh pengurus yayasan.`
+        message: `PERINGATAN INTEGRITAS: Nomor registrasi "${searchId}" ditemukan GANDA pada ${matches.length} penerima berbeda di buku induk yayasan! Dokumen ini ditangguhkan sampai dilakukan perbaikan oleh pengurus yayasan.`
       });
     }
 
-    // Validasi Normal (1 Data Unik)
+    // 1 Data Unik Terdaftar
     const match = matches[0];
     const isAktif = (match.status || 'AKTIF').toUpperCase() === 'AKTIF';
 
@@ -215,6 +351,7 @@ module.exports = async (req, res) => {
     return res.status(200).json({
       success: true,
       status: isAktif ? 'VALID' : 'REVOKED',
+      searchType: 'ID',
       yayasan: PROFIL_YAYASAN.namaYayasan,
       lembaga: PROFIL_YAYASAN.lembaga,
       alamat: PROFIL_YAYASAN.alamat,
@@ -223,15 +360,7 @@ module.exports = async (req, res) => {
         nik: PROFIL_YAYASAN.nik,
         jabatan: PROFIL_YAYASAN.jabatan
       },
-      data: {
-        id: match.id,
-        nama: match.nama,
-        lomba: match.lomba,
-        predikat: match.predikat || 'Peserta',
-        tanggal: match.tanggal,
-        status: match.status || 'AKTIF',
-        isValid: isAktif
-      },
+      data: formatRecordData(match),
       message: isAktif 
         ? 'Sertifikat resmi terverifikasi dan sah terdaftar pada Syarief Internasional Boarding School Bondowoso.' 
         : 'Sertifikat telah dicabut atau dinyatakan tidak berlaku oleh pimpinan yayasan.'

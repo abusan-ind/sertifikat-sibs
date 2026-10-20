@@ -592,6 +592,254 @@
       transform: translateY(-1px);
     }
 
+    /* File Download & Live Preview Card */
+    .file-download-card {
+      background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%);
+      border: 1.5px solid var(--primary-border);
+      border-radius: var(--radius-md);
+      padding: 18px 20px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      box-shadow: 0 4px 14px rgba(6, 78, 59, 0.06);
+    }
+    @media (max-width: 620px) {
+      .file-download-card {
+        flex-direction: column;
+        align-items: stretch;
+        text-align: center;
+      }
+    }
+    .file-left-col {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    @media (max-width: 620px) {
+      .file-left-col {
+        flex-direction: column;
+        text-align: center;
+      }
+    }
+    .file-icon-badge {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: #ffffff;
+      border: 1.5px solid var(--primary-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+      box-shadow: 0 2px 6px rgba(6, 78, 59, 0.08);
+    }
+    .file-text-col h4 {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--primary);
+      margin-bottom: 2px;
+    }
+    .file-text-col p {
+      font-size: 12px;
+      color: var(--slate-600);
+      line-height: 1.4;
+    }
+    .file-btn-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+      flex-wrap: wrap;
+    }
+    @media (max-width: 620px) {
+      .file-btn-group {
+        justify-content: center;
+      }
+    }
+    .btn-preview-trigger {
+      padding: 9px 16px;
+      background: #ffffff;
+      border: 1.5px solid var(--primary);
+      border-radius: 10px;
+      color: var(--primary);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .btn-preview-trigger:hover {
+      background: var(--primary-soft);
+      transform: translateY(-1px);
+    }
+    .btn-download-direct {
+      padding: 10px 18px;
+      background: linear-gradient(135deg, var(--primary) 0%, #047857 100%);
+      border: none;
+      border-radius: 10px;
+      color: #ffffff;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 3px 10px rgba(6, 78, 59, 0.2);
+      transition: all 0.2s;
+    }
+    .btn-download-direct:hover {
+      background: linear-gradient(135deg, var(--primary-950) 0%, var(--primary) 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(6, 78, 59, 0.3);
+    }
+
+    /* Modal Interactive Preview Dokumen */
+    .preview-modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(15, 23, 42, 0.82);
+      backdrop-filter: blur(8px);
+      z-index: 10000;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .preview-modal-dialog {
+      background: #ffffff;
+      width: 100%;
+      max-width: 900px;
+      height: 88vh;
+      border-radius: 20px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 25px 60px -15px rgba(0,0,0,0.45);
+      overflow: hidden;
+      animation: modalFadeIn 0.25s ease-out;
+    }
+    @keyframes modalFadeIn {
+      from { transform: scale(0.95); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .preview-modal-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      background: #ffffff;
+      border-bottom: 1.5px solid var(--slate-200);
+      gap: 12px;
+    }
+    .preview-modal-head h3 {
+      font-size: 14.5px;
+      font-weight: 800;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .preview-modal-head-btns {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-head-dl {
+      padding: 7px 14px;
+      background: var(--primary);
+      color: white;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 700;
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s;
+    }
+    .btn-head-dl:hover { background: var(--primary-light); }
+    .btn-head-close {
+      padding: 7px 14px;
+      background: #f1f5f9;
+      color: var(--slate-700);
+      border: 1px solid var(--slate-300);
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-head-close:hover { background: #e2e8f0; }
+    .preview-modal-content {
+      flex: 1;
+      width: 100%;
+      height: 100%;
+      background: #f8fafc;
+      position: relative;
+    }
+    .preview-modal-content iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    /* Daftar Hasil Pencarian Nama Ganda */
+    .multi-results-list {
+      display: grid;
+      gap: 14px;
+      margin: 20px 0;
+    }
+    .multi-card-item {
+      background: #ffffff;
+      border: 1.5px solid var(--slate-200);
+      border-radius: var(--radius-md);
+      padding: 18px 20px;
+      transition: all 0.2s;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+    }
+    .multi-card-item:hover {
+      border-color: var(--primary);
+      box-shadow: 0 8px 20px -4px rgba(6, 78, 59, 0.1);
+      transform: translateY(-1px);
+    }
+    .multi-card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .multi-card-header h4 {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--slate-900);
+      margin-bottom: 4px;
+    }
+    .multi-card-meta {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+      font-size: 12.5px;
+      color: var(--slate-600);
+    }
+    .multi-card-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+      padding-top: 12px;
+      border-top: 1px solid var(--slate-100);
+    }
+
     /* Footer Disclaimer */
     .footer-disclaimer {
       text-align: center;
@@ -654,26 +902,48 @@
 
   </main>
 
+  <!-- Interactive Preview Modal Dialog -->
+  <div id="preview-modal" class="preview-modal-overlay" onclick="if(event.target === this) closeDocPreview()">
+    <div class="preview-modal-dialog">
+      <div class="preview-modal-head">
+        <h3><span>📄</span> <span id="preview-title">Pratinjau Dokumen Sertifikat</span></h3>
+        <div class="preview-modal-head-btns">
+          <a id="preview-direct-download" href="#" target="_blank" download class="btn-head-dl">📥 Unduh File</a>
+          <button type="button" class="btn-head-close" onclick="closeDocPreview()">✕ Tutup</button>
+        </div>
+      </div>
+      <div class="preview-modal-content">
+        <iframe id="preview-iframe" src="" allow="autoplay" frameborder="0"></iframe>
+      </div>
+    </div>
+  </div>
+
   <script>
     (function() {
-      function getTargetId() {
+      function getSearchParams() {
         const urlParams = new URLSearchParams(window.location.search);
         let id = urlParams.get('id') || urlParams.get('cert') || '';
-        if (!id) {
+        let nama = urlParams.get('nama') || urlParams.get('name') || '';
+
+        if (!id && !nama) {
           const pathname = window.location.pathname;
           const match = pathname.match(/\/verify\/([^\/\?#]+)/i);
           if (match && match[1]) {
             id = decodeURIComponent(match[1]);
           }
         }
-        return (id || '').trim().toUpperCase();
+
+        return {
+          id: (id || '').trim().toUpperCase(),
+          nama: (nama || '').trim()
+        };
       }
 
-      const targetId = getTargetId();
+      const params = getSearchParams();
       const loadingBox = document.getElementById('loading-box');
       const resultBox = document.getElementById('result-box');
 
-      if (!targetId) {
+      if (!params.id && !params.nama) {
         loadingBox.style.display = 'none';
         resultBox.style.display = 'block';
         resultBox.innerHTML = `
@@ -681,8 +951,8 @@
             <div class="status-banner not-found">
               <div class="badge-icon">❓</div>
               <div class="status-text">
-                <h2>Nomor Sertifikat Belum Diisi</h2>
-                <p>Silakan masukkan nomor sertifikat melalui halaman pencarian utama yayasan.</p>
+                <h2>Parameter Pencarian Belum Diisi</h2>
+                <p>Silakan masukkan nomor sertifikat atau nama santri melalui halaman pencarian utama yayasan.</p>
               </div>
             </div>
             <div class="cert-body" style="text-align: center;">
@@ -693,23 +963,29 @@
         return;
       }
 
+      const apiUrl = params.nama && !params.id
+        ? '/api/verify?nama=' + encodeURIComponent(params.nama)
+        : '/api/verify?id=' + encodeURIComponent(params.id);
+
+      const queryLabel = params.id || params.nama;
+
       // Panggil API Vercel Serverless Function
-      fetch('/api/verify?id=' + encodeURIComponent(targetId))
+      fetch(apiUrl)
         .then(res => res.json())
         .then(resp => {
           loadingBox.style.display = 'none';
           resultBox.style.display = 'block';
-          renderVerification(resp, targetId);
+          renderVerification(resp, queryLabel);
         })
         .catch(err => {
           console.error(err);
           loadingBox.style.display = 'none';
           resultBox.style.display = 'block';
-          renderError(targetId);
+          renderError(queryLabel);
         });
 
-      function renderVerification(resp, queryId) {
-        // 1. Tangani Kasus Nomor Duplikat
+      function renderVerification(resp, queryVal) {
+        // 1. Kasus Nomor Duplikat
         if (resp && resp.status === 'DUPLICATE_ERROR') {
           resultBox.innerHTML = `
             <div class="result-card">
@@ -717,7 +993,7 @@
                 <div class="badge-icon">⚠️</div>
                 <div class="status-text">
                   <h2>Peringatan Integritas: Nomor Sertifikat Ganda</h2>
-                  <p>Nomor registrasi <b>${esc(queryId)}</b> terdeteksi ganda (duplikat) pada database yayasan.</p>
+                  <p>Nomor registrasi <b>${esc(queryVal)}</b> terdeteksi ganda (duplikat) pada database yayasan.</p>
                 </div>
               </div>
               <div class="cert-body">
@@ -735,7 +1011,7 @@
                 </div>
                 <div class="actions-grid">
                   <a href="/" class="btn-act primary">🔍 Cek Nomor Lain</a>
-                  <a href="https://wa.me/?text=${encodeURIComponent('Halo Admin SIBS, mohon bantuan klarifikasi nomor sertifikat ganda ' + queryId)}" target="_blank" class="btn-act wa">📲 Hubungi Yayasan</a>
+                  <a href="https://wa.me/?text=${encodeURIComponent('Halo Admin SIBS, mohon bantuan klarifikasi nomor sertifikat ganda ' + queryVal)}" target="_blank" class="btn-act wa">📲 Hubungi Yayasan</a>
                   <button type="button" class="btn-act secondary" onclick="location.reload()">🔄 Muat Ulang</button>
                 </div>
               </div>
@@ -744,24 +1020,96 @@
           return;
         }
 
-        // 2. Tangani Kasus Dokumen Tidak Ditemukan
+        // 2. Kasus Banyak Hasil untuk Pencarian Nama Santri
+        if (resp && resp.status === 'MULTIPLE_MATCHES') {
+          const listHtml = (resp.records || []).map(item => `
+            <div class="multi-card-item">
+              <div class="multi-card-header">
+                <div>
+                  <h4>${esc(item.lomba)}</h4>
+                  <div class="multi-card-meta">
+                    <span class="badge-prestasi">⭐ ${esc(item.predikat)}</span>
+                    <span class="id-tag">${esc(item.id)}</span>
+                    <span>📅 ${esc(item.tanggal)}</span>
+                  </div>
+                </div>
+                <span class="status-pill ${item.isValid ? 'aktif' : 'dicabut'}">
+                  ● ${esc(item.status)}
+                </span>
+              </div>
+              <div class="multi-card-actions">
+                <a href="/verify/${encodeURIComponent(item.id)}" class="btn-act primary" style="font-size:12.5px; padding:8px 14px;">
+                  🔍 Buka Lembar Verifikasi
+                </a>
+                ${item.file && item.file.hasFile ? `
+                  <button type="button" class="btn-preview-trigger" style="font-size:12px; padding:7px 12px;" onclick="openDocPreview('${esc(item.file.previewUrl)}', '${esc(item.file.downloadUrl)}', '${esc(item.nama)} - ${esc(item.lomba)}')">
+                    👁️ Pratinjau
+                  </button>
+                  <a href="${esc(item.file.downloadUrl)}" target="_blank" download class="btn-head-dl" style="font-size:12px; padding:7px 12px;">
+                    📥 Unduh File
+                  </a>
+                ` : ''}
+              </div>
+            </div>
+          `).join('');
+
+          resultBox.innerHTML = `
+            <div class="result-card">
+              <div class="status-banner valid">
+                <div class="badge-icon">👥</div>
+                <div class="status-text">
+                  <h2>Ditemukan ${resp.totalMatches} Sertifikat</h2>
+                  <p>Arsip penerbitan resmi atas nama <b>${esc(resp.nama)}</b>.</p>
+                </div>
+              </div>
+              <div class="cert-body">
+                <div class="inst-header-box">
+                  <img src="/logo-sibs.png" alt="Logo SIBS" />
+                  <h3>SYARIF INTERNASIONAL BOARDING SCHOOL</h3>
+                  <div class="sub-lembaga">Lembaga Pendidikan Al-Quran Syarief Institute Bondowoso</div>
+                  <div class="alamat-lembaga">Dusun Bunduh RT 09 RW 03, Desa Bataan, Kec. Tenggarang, Kab. Bondowoso</div>
+                </div>
+                <p style="font-size: 13.5px; color: var(--slate-600); margin-bottom: 12px;">
+                  Pilih kegiatan / perlombaan santri di bawah ini untuk melihat lembar verifikasi sah dan mengunduh sertifikat:
+                </p>
+                <div class="multi-results-list">
+                  ${listHtml}
+                </div>
+                <div class="actions-grid" style="margin-top:20px;">
+                  <a href="/" class="btn-act secondary">🔍 Cari Nama / Nomor Lain</a>
+                </div>
+              </div>
+            </div>
+          `;
+          return;
+        }
+
+        // 3. Kasus Dokumen / Nama Tidak Ditemukan
         if (!resp || !resp.success || resp.status === 'NOT_FOUND') {
+          const isName = resp && resp.searchType === 'NAME';
+          const title = isName ? 'Nama Santri Tidak Ditemukan' : 'Sertifikat Tidak Ditemukan';
+          const desc = isName
+            ? `Sertifikat atas nama <b>"${esc(queryVal)}"</b> tidak ditemukan dalam buku induk yayasan.`
+            : `Nomor registrasi <b>${esc(queryVal)}</b> tidak tercatat dalam buku induk penerbitan yayasan.`;
+          const tip = isName
+            ? `Pastikan penulisan nama santri telah sesuai dengan yang tertera di sertifikat fisik (huruf besar/kecil diabaikan).`
+            : `Mohon periksa kembali apakah ada kesalahan pengetikan huruf atau angka pada nomor registrasi.`;
+
           resultBox.innerHTML = `
             <div class="result-card">
               <div class="status-banner not-found">
                 <div class="badge-icon">❌</div>
                 <div class="status-text">
-                  <h2>Sertifikat Tidak Ditemukan</h2>
-                  <p>Nomor registrasi <b>${esc(queryId)}</b> tidak tercatat dalam buku induk penerbitan yayasan.</p>
+                  <h2>${title}</h2>
+                  <p>${desc}</p>
                 </div>
               </div>
               <div class="cert-body">
                 <p style="font-size: 13.5px; color: var(--slate-600); line-height: 1.6; margin-bottom: 22px;">
-                  Sertifikat dengan nomor di atas tidak terdaftar resmi pada <b>Syarif Internasional Boarding School</b>. 
-                  Mohon periksa kembali apakah ada kesalahan pengetikan huruf atau angka pada nomor registrasi.
+                  ${tip}
                 </p>
                 <div class="actions-grid">
-                  <a href="/" class="btn-act primary">🔍 Periksa Nomor Lain</a>
+                  <a href="/" class="btn-act primary">🔍 Cari Kembali</a>
                   <button type="button" class="btn-act secondary" onclick="location.reload()">🔄 Coba Lagi</button>
                 </div>
               </div>
@@ -770,7 +1118,7 @@
           return;
         }
 
-        // 3. Tangani Dokumen Valid atau Dicabut
+        // 4. Kasus Dokumen Valid atau Dicabut (Data Tunggal)
         const data = resp.data;
         const isValid = resp.status === 'VALID';
 
@@ -860,6 +1208,42 @@
                 </div>
               </div>
 
+              <!-- File Sertifikat Asli (Download & Live Preview) -->
+              ${data.file && data.file.hasFile ? `
+                <div class="file-download-card">
+                  <div class="file-left-col">
+                    <div class="file-icon-badge">📄</div>
+                    <div class="file-text-col">
+                      <h4>Dokumen File Sertifikat Asli</h4>
+                      <p>Tersedia arsip digital resmi yayasan. Anda dapat melihat pratinjau langsung atau mengunduh file dokumen.</p>
+                    </div>
+                  </div>
+                  <div class="file-btn-group">
+                    <button type="button" class="btn-preview-trigger" onclick="openDocPreview('${esc(data.file.previewUrl)}', '${esc(data.file.downloadUrl)}', '${esc(data.nama)} - ${esc(data.lomba)}')">
+                      👁️ Pratinjau Dokumen
+                    </button>
+                    <a href="${esc(data.file.downloadUrl)}" target="_blank" download class="btn-download-direct">
+                      📥 Unduh Sertifikat
+                    </a>
+                  </div>
+                </div>
+              ` : `
+                <div class="file-download-card" style="background: #f8fafc; border-color: var(--slate-200);">
+                  <div class="file-left-col">
+                    <div class="file-icon-badge" style="background:#f1f5f9; border-color:var(--slate-300); font-size:20px;">ℹ️</div>
+                    <div class="file-text-col">
+                      <h4 style="color:var(--slate-700)">Arsip Dokumen Fisik</h4>
+                      <p>File digital sertifikat ini tercatat sah di buku induk yayasan. Anda dapat mencetak lembar verifikasi ini sebagai dokumen fisik resmi.</p>
+                    </div>
+                  </div>
+                  <div class="file-btn-group">
+                    <button type="button" class="btn-preview-trigger" onclick="window.print()">
+                      🖨️ Cetak Lembar Bukti
+                    </button>
+                  </div>
+                </div>
+              `}
+
               <!-- Signee Decree Card -->
               <div class="signee-card">
                 <div class="signee-text">
@@ -926,7 +1310,7 @@
             finalCanvas.style.borderRadius = '6px';
             const ctx = finalCanvas.getContext('2d');
             
-            // Background putih + 8% quiet zone
+            // Background putih + quiet zone
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(0, 0, 140, 140);
             const m = 11;
@@ -957,7 +1341,7 @@
         }, 80);
       }
 
-      function renderError(queryId) {
+      function renderError(queryVal) {
         resultBox.innerHTML = `
           <div class="result-card">
             <div class="status-banner revoked">
@@ -973,6 +1357,25 @@
           </div>
         `;
       }
+
+      window.openDocPreview = function(previewUrl, downloadUrl, title) {
+        const modal = document.getElementById('preview-modal');
+        const iframe = document.getElementById('preview-iframe');
+        const dlBtn = document.getElementById('preview-direct-download');
+        const titleEl = document.getElementById('preview-title');
+
+        titleEl.textContent = title || 'Pratinjau Dokumen Sertifikat';
+        dlBtn.href = downloadUrl || previewUrl;
+        iframe.src = previewUrl;
+        modal.style.display = 'flex';
+      };
+
+      window.closeDocPreview = function() {
+        const modal = document.getElementById('preview-modal');
+        const iframe = document.getElementById('preview-iframe');
+        iframe.src = '';
+        modal.style.display = 'none';
+      };
 
       window.copyLink = function(url) {
         navigator.clipboard.writeText(url).then(() => {

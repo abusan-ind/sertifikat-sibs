@@ -20,6 +20,14 @@ function loadStaticFile(filename) {
   }
 }
 
+function getStaticFile(filename, fallbackMemory) {
+  try {
+    return fs.readFileSync(path.join(__dirname, filename), 'utf8');
+  } catch (err) {
+    return fallbackMemory;
+  }
+}
+
 const INDEX_HTML = loadStaticFile('index.html');
 const VERIFY_HTML = loadStaticFile('verify.html');
 const GENERATOR_HTML = loadStaticFile('generator-sertifikat.html');
@@ -99,21 +107,21 @@ function handleRequest(req, res) {
     if (pathname === '/verify' || pathname.startsWith('/verify/') || pathname === '/verify.html') {
       res.statusCode = 200;
       res.setHeader('Content-Type', 'text/html; charset=utf-8');
-      return res.end(VERIFY_HTML || '<h1>Halaman Verifikasi Tidak Tersedia</h1>');
+      return res.end(getStaticFile('verify.html', VERIFY_HTML) || '<h1>Halaman Verifikasi Tidak Tersedia</h1>');
     }
 
     // 3. Panel Khusus Admin (/admin atau /generator atau /generator-sertifikat.html)
     if (pathname === '/admin' || pathname === '/generator' || pathname === '/generator-sertifikat.html') {
       res.statusCode = 200;
       res.setHeader('Content-Type', 'text/html; charset=utf-8');
-      return res.end(GENERATOR_HTML || '<h1>Halaman Generator Tidak Tersedia</h1>');
+      return res.end(getStaticFile('generator-sertifikat.html', GENERATOR_HTML) || '<h1>Halaman Generator Tidak Tersedia</h1>');
     }
 
     // 4. Halaman Beranda Publik (/)
     if (pathname === '/' || pathname === '/index.html') {
       res.statusCode = 200;
       res.setHeader('Content-Type', 'text/html; charset=utf-8');
-      return res.end(INDEX_HTML || '<h1>Portal Yayasan Tidak Tersedia</h1>');
+      return res.end(getStaticFile('index.html', INDEX_HTML) || '<h1>Portal Yayasan Tidak Tersedia</h1>');
     }
 
     // 5. Cek File Statis Lainnya

@@ -15,6 +15,7 @@
  *    Kolom D: Predikat / Peran (misal: Juara 1, Peserta, Finalis)
  *    Kolom E: Tanggal
  *    Kolom F: Status (AKTIF / DICABUT / KADALUARSA)
+ *    Kolom G: Link File / Sertifikat (Link Google Drive atau direct URL)
  * 4. Salin ID Spreadsheet Anda (dari URL spreadsheet) ke variabel SPREADSHEET_ID di bawah.
  */
 
@@ -26,7 +27,7 @@ const SHEET_NAME = 'Sertifikat';
  * Endpoint Utama (doGet)
  * Mendukung 2 mode:
  * 1. Mode API JSON (untuk dipanggil secara mulus dari halaman Blogger lewat fetch)
- *    Contoh: ?action=api&id=YYS-2026-0001
+ *    Contoh: ?action=api&id=YYS-2026-0001 atau ?action=api&nama=Agung%20Budi
  * 2. Mode Web App / Iframe Standalone (jika ingin dibuka langsung / via iframe)
  *    Contoh: ?id=YYS-2026-0001
  */
@@ -34,11 +35,12 @@ function doGet(e) {
   try {
     const params = e && e.parameter ? e.parameter : {};
     const id = String(params.id || '').trim().toUpperCase();
+    const nama = String(params.nama || params.name || '').trim();
     const action = String(params.action || '').trim().toLowerCase();
 
-    // Jika dipanggil sebagai API JSON oleh Blogger
+    // Jika dipanggil sebagai API JSON oleh Blogger / Web
     if (action === 'api') {
-      return handleApiRequest(id);
+      return handleApiRequest(id, nama);
     }
 
     // Default: Mode Tampilan Web App / Iframe
@@ -52,19 +54,66 @@ function doGet(e) {
 }
 
 /**
- * Handler API JSON untuk integrasi Blogger (Fetch AJAX)
+ * Helper Parser Link Google Drive
  */
-function handleApiRequest(id) {
-  if (!id) {
+function parseDriveLinks(rawUrl) {
+  if (!rawUrl || typeof rawUrl !== 'string') return null;
+  const trimmed = rawUrl.trim();
+  if (!trimmed) return null;
+
+  const match = trimmed.match(/https?:\/\/(?:drive|docs)\.google\.com\/(?:file\/d\/|open\?id=|uc\?id=|document\/d\/|presentation\/d\/)([a-zA-Z0-9_-]+)/i);
+  if (match && match[1]) {
+    const fileId = match[1];
+    return {
+      hasFile: true,
+      isGoogleDrive: true,
+      fileId: fileId,
+      previewUrl: 'https://drive.google.com/file/d/' + fileId + '/preview',
+      downloadUrl: 'https://drive.google.com/uc?export=download&id=' + fileId,
+      viewUrl: 'https://drive.google.com/file/d/' + fileId + '/view?usp=sharing',
+      originalUrl: trimmed
+    };
+  }
+
+  return {
+    hasFile: true,
+    isGoogleDrive: false,
+    fileId: null,
+    previewUrl: trimmed,
+    downloadUrl: trimmed,
+    viewUrl: trimmed,
+    originalUrl: trimmed
+  };
+}
+
+/**
+ * Normalisasi nama (case-insensitive & toleran spasi)
+ */
+function normalizeName(str) {
+  return String(str || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+/**
+ * Handler API JSON untuk integrasi Web & Blogger (Fetch AJAX)
+ */
+function handleApiRequest(id, nama) {
+  if (!id && !nama) {
     return createJsonResponse({
       success: false,
-      status: 'EMPTY_ID',
-      message: 'Parameter ID sertifikat tidak ditemukan.'
+      status: 'EMPTY_QUERY',
+      message: 'Parameter ID atau Nama sertifikat tidak ditemukan.'
     });
   }
 
-  const lookup = findCertificateById(id);
+  if (nama && !id) {
+    return createJsonResponse(findCertificateByName(nama));
+  }
 
+  const lookup = findCertificateById(id);
   return createJsonResponse(lookup);
 }
 
@@ -120,6 +169,7 @@ function findCertificateById(targetId) {
   const predikat = row[3] || 'Peserta';
   const tanggal = row[4] || '';
   const rawStatus = (row[5] || 'AKTIF').trim().toUpperCase();
+  const fileUrl = row[6] || '';
 
   const isAktif = rawStatus === 'AKTIF';
 
@@ -133,9 +183,86 @@ function findCertificateById(targetId) {
       predikat: predikat,
       tanggal: tanggal,
       status: rawStatus,
-      isValid: isAktif
+      isValid: isAktif,
+      file: parseDriveLinks(fileUrl)
     },
     message: isAktif ? 'Sertifikat resmi dan terdaftar aktif.' : 'Sertifikat telah dicabut atau non-aktif.'
+  };
+}
+
+/**
+ * Fungsi pencarian data sertifikat berdasarkan Nama (Case-Insensitive)
+ */
+function findCertificateByName(targetNama) {
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const sheet = ss.getSheetByName(SHEET_NAME);
+
+  if (!sheet) {
+    return {
+      success: false,
+      status: 'CONFIG_ERROR',
+      message: 'Tab sheet "' + SHEET_NAME + '" tidak ditemukan pada database.'
+    };
+  }
+
+  const data = sheet.getDataRange().getDisplayValues();
+  if (data.length <= 1) {
+    return {
+      success: false,
+      status: 'EMPTY_DATABASE',
+      message: 'Database sertifikat masih kosong.'
+    };
+  }
+
+  const normTarget = normalizeName(targetNama);
+  const matches = data.slice(1).filter(row => normalizeName(row[1]) === normTarget);
+
+  if (matches.length === 0) {
+    return {
+      success: false,
+      status: 'NOT_FOUND',
+      searchType: 'NAME',
+      query: targetNama,
+      message: 'Sertifikat atas nama "' + targetNama + '" tidak ditemukan dalam database resmi yayasan.'
+    };
+  }
+
+  const formatRow = function(row) {
+    const rawStatus = (row[5] || 'AKTIF').trim().toUpperCase();
+    const isAktif = rawStatus === 'AKTIF';
+    return {
+      id: row[0] || '',
+      nama: row[1] || '',
+      lomba: row[2] || '',
+      predikat: row[3] || 'Peserta',
+      tanggal: row[4] || '',
+      status: rawStatus,
+      isValid: isAktif,
+      file: parseDriveLinks(row[6] || '')
+    };
+  };
+
+  if (matches.length > 1) {
+    return {
+      success: true,
+      status: 'MULTIPLE_MATCHES',
+      searchType: 'NAME',
+      totalMatches: matches.length,
+      query: targetNama,
+      nama: matches[0][1] || targetNama,
+      records: matches.map(formatRow),
+      message: 'Ditemukan ' + matches.length + ' sertifikat atas nama ' + matches[0][1]
+    };
+  }
+
+  const single = formatRow(matches[0]);
+  return {
+    success: true,
+    status: single.isValid ? 'VALID' : 'REVOKED',
+    searchType: 'NAME',
+    totalMatches: 1,
+    data: single,
+    message: single.isValid ? 'Sertifikat resmi dan terdaftar aktif.' : 'Sertifikat telah dicabut atau non-aktif.'
   };
 }
 

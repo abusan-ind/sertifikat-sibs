@@ -48,7 +48,7 @@ Data resmi yang telah tertanam di dalam seluruh sistem:
 
 ## 📊 Menghubungkan Google Sheets Yayasan
 
-Agar status keaslian dapat dipantau dan diubah kapan saja (misal: membatalkan sertifikat menjadi `DICABUT`):
+Agar status keaslian dapat dipantau dan diubah kapan saja (misal: membatalkan sertifikat menjadi `DICABUT` atau menyematkan file sertifikat Google Drive):
 
 1. Buat Google Sheets bernama **`Database Sertifikat Yayasan`** dengan nama tab **`Sertifikat`**.
 2. Kolom baris pertama (Header):
@@ -58,11 +58,25 @@ Agar status keaslian dapat dipantau dan diubah kapan saja (misal: membatalkan se
    - Kolom D: `Predikat` (contoh: `Juara 1 Tingkat Provinsi`)
    - Kolom E: `Tanggal` (contoh: `18 Oktober 2026`)
    - Kolom F: `Status` (ketik `AKTIF` atau `DICABUT`)
-3. Atur izin berbagi (*Share*):
+   - **Kolom G (Baru): `Link_File`** (Link file Google Drive dari sertifikat santri, contoh: `https://drive.google.com/file/d/xxx/view?usp=sharing`)
+3. **Pengaturan File Google Drive**:
+   - Pastikan file sertifikat (PDF atau Gambar) di Google Drive Anda diatur ke: **"Anyone with the link can view"** (*Siapa saja yang memiliki link dapat melihat*).
+   - Sistem web akan secara otomatis mengubah link tersebut menjadi tombol **👁️ Pratinjau Dokumen (Preview Modal)** dan **📥 Unduh Sertifikat (Direct Download)** tanpa biaya apa pun (*100% Gratis di Vercel*).
+4. Atur izin berbagi (*Share*) Google Sheets:
    Ubah akses umum menjadi **"Anyone with the link (Siapa saja yang memiliki link)"** sebagai **Viewer (Pelihat)**.
-4. Di Vercel Dashboard, buka **Settings** ➔ **Environment Variables**:
+5. Di Vercel Dashboard, buka **Settings** ➔ **Environment Variables**:
    - `SPREADSHEET_ID` = `[ID_SPREADSHEET_ANDA]`
    - `SHEET_NAME` = `Sertifikat`
+
+---
+
+## 🔍 Fitur Pencarian Berdasarkan Nama Santri
+
+Pengunjung dapat mencari sertifikat dengan 2 cara:
+1. **Pencarian via Nomor Registrasi**: Memasukkan kode sertifikat (contoh: `SIBS-2026-0001`).
+2. **Pencarian via Nama Santri**: Memasukkan nama lengkap santri.
+   - **Toleran Huruf Besar/Kecil (*Case-Insensitive*)**: Pengetikan `agung budi santoso`, `AGUNG BUDI SANTOSO`, maupun `Agung Budi Santoso` akan diproses sama persis.
+   - **Penanganan Banyak Sertifikat**: Jika santri memenangkan lebih dari 1 lomba, sistem akan menampilkan daftar seluruh piagam santri tersebut agar pengguna bisa memilih lomba mana yang ingin diverifikasi dan diunduh.
 
 ---
 

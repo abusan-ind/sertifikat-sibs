@@ -273,6 +273,43 @@
       background: linear-gradient(90deg, var(--primary) 0%, #10b981 50%, var(--gold) 100%);
     }
 
+    /* Switch Tabs Mode Pencarian */
+    .search-tabs {
+      display: flex;
+      gap: 6px;
+      background: var(--slate-100);
+      padding: 5px;
+      border-radius: var(--radius-md);
+      margin-bottom: 16px;
+      border: 1px solid var(--slate-200);
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: none;
+      background: transparent;
+      color: var(--slate-600);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .tab-btn.active {
+      background: #ffffff;
+      color: var(--primary);
+      box-shadow: 0 2px 8px rgba(6, 78, 59, 0.1);
+    }
+    .tab-btn:hover:not(.active) {
+      color: var(--slate-900);
+      background: rgba(255,255,255,0.6);
+    }
+
     .search-form {
       display: flex;
       flex-direction: column;
@@ -665,6 +702,16 @@
 
       <!-- Main Search Box (Glass Card) -->
       <div class="search-card">
+        <!-- Search Mode Switcher Tabs -->
+        <div class="search-tabs">
+          <button type="button" class="tab-btn active" id="tab-id" onclick="setSearchMode('id')">
+            🏷️ Cari via Nomor Registrasi
+          </button>
+          <button type="button" class="tab-btn" id="tab-name" onclick="setSearchMode('name')">
+            👤 Cari via Nama Santri
+          </button>
+        </div>
+
         <form class="search-form" id="search-form" onsubmit="handleSearch(event)">
           <div class="search-input-wrap">
             <span class="search-icon">🔍</span>
@@ -693,16 +740,16 @@
         </button>
 
         <div class="sample-section">
-          <span class="sample-title">Uji coba cepat (klik nomor di bawah untuk cek):</span>
-          <div class="sample-tags">
+          <span class="sample-title" id="sample-title">Uji coba cepat (klik nomor di bawah untuk cek):</span>
+          <div class="sample-tags" id="sample-tags">
             <button type="button" class="sample-chip active" onclick="setQuery('SIBS-2026-0001')">
               <span class="chip-dot"></span> SIBS-2026-0001 (Aktif)
             </button>
             <button type="button" class="sample-chip active" onclick="setQuery('SIBS-2026-0002')">
               <span class="chip-dot"></span> SIBS-2026-0002 (Aktif)
             </button>
-            <button type="button" class="sample-chip revoked" onclick="setQuery('SIBS-2026-0003')">
-              <span class="chip-dot"></span> SIBS-2026-0003 (Dicabut)
+            <button type="button" class="sample-chip active" onclick="setQuery('SIBS-2026-0003')">
+              <span class="chip-dot"></span> SIBS-2026-0003 (Aktif)
             </button>
           </div>
         </div>
@@ -764,17 +811,74 @@
 
   <script>
     let html5QrcodeScanner = null;
+    let currentMode = 'id';
+
+    function setSearchMode(mode) {
+      currentMode = mode;
+      const tabId = document.getElementById('tab-id');
+      const tabName = document.getElementById('tab-name');
+      const input = document.getElementById('cert-input');
+      const sampleTitle = document.getElementById('sample-title');
+      const sampleTags = document.getElementById('sample-tags');
+
+      if (mode === 'name') {
+        tabId.classList.remove('active');
+        tabName.classList.add('active');
+        input.classList.add('mode-name');
+        input.placeholder = "Masukkan nama santri (cth: Agung Budi Santoso)";
+        sampleTitle.innerText = "Uji coba nama santri (huruf besar/kecil diabaikan):";
+        sampleTags.innerHTML = `
+          <button type="button" class="sample-chip active" onclick="setQuery('Agung Budi Santoso')">
+            <span class="chip-dot"></span> Agung Budi Santoso
+          </button>
+          <button type="button" class="sample-chip active" onclick="setQuery('Muhammad Rizky Pratama')">
+            <span class="chip-dot"></span> Muhammad Rizky Pratama
+          </button>
+          <button type="button" class="sample-chip active" onclick="setQuery('Fatimah Az-Zahra')">
+            <span class="chip-dot"></span> Fatimah Az-Zahra
+          </button>
+        `;
+      } else {
+        tabName.classList.remove('active');
+        tabId.classList.add('active');
+        input.classList.remove('mode-name');
+        input.placeholder = "Masukkan nomor (cth: SIBS-2026-0001)";
+        sampleTitle.innerText = "Uji coba cepat (klik nomor di bawah untuk cek):";
+        sampleTags.innerHTML = `
+          <button type="button" class="sample-chip active" onclick="setQuery('SIBS-2026-0001')">
+            <span class="chip-dot"></span> SIBS-2026-0001 (Aktif)
+          </button>
+          <button type="button" class="sample-chip active" onclick="setQuery('SIBS-2026-0002')">
+            <span class="chip-dot"></span> SIBS-2026-0002 (Aktif)
+          </button>
+          <button type="button" class="sample-chip active" onclick="setQuery('SIBS-2026-0003')">
+            <span class="chip-dot"></span> SIBS-2026-0003 (Aktif)
+          </button>
+        `;
+      }
+      input.value = '';
+      input.focus();
+    }
 
     function handleSearch(e) {
       e.preventDefault();
-      const val = document.getElementById('cert-input').value.trim().toUpperCase();
+      const val = document.getElementById('cert-input').value.trim();
       if (!val) return;
-      window.location.href = '/verify/' + encodeURIComponent(val);
+
+      if (currentMode === 'name') {
+        window.location.href = '/verify?nama=' + encodeURIComponent(val);
+      } else {
+        window.location.href = '/verify/' + encodeURIComponent(val.toUpperCase());
+      }
     }
 
-    function setQuery(id) {
-      document.getElementById('cert-input').value = id;
-      window.location.href = '/verify/' + encodeURIComponent(id);
+    function setQuery(query) {
+      document.getElementById('cert-input').value = query;
+      if (currentMode === 'name') {
+        window.location.href = '/verify?nama=' + encodeURIComponent(query);
+      } else {
+        window.location.href = '/verify/' + encodeURIComponent(query.toUpperCase());
+      }
     }
 
     function openScanner() {
